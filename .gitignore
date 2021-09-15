@@ -2,6 +2,10 @@
 .Rhistory
 .Rapp.history
 
+# Shape Files
+.nc
+
+
 # Session Data files
 .RData
 
