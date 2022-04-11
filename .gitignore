@@ -8,7 +8,7 @@ __pycache__/
 
 # R Data Files
 *.RData
-.Rhistory
+*.Rhistory
 
 # Text Files
 *.txt
