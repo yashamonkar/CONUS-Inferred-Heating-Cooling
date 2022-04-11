@@ -17,7 +17,7 @@ library(sf)
 library(ncdf4) 
 
 #Load the shape-file data 
-states <- readOGR("usa_shapefile/cb_2014_us_nation_20m.shp")
+states <- readOGR("~/GitHub/CONUS-Inferred-Heating-Cooling/data/sf/usa_shapefile/cb_2014_us_nation_20m.shp")
 
 #Plotting the data
 plot(states, xlim = c(-125, -66),
