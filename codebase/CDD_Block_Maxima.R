@@ -34,6 +34,7 @@ library(ncdf4)
 library(doParallel)
 library(foreach)
 library(broom)
+library(rgdal)
 
 #Source functions
 source("functions/Get_Block_Maximum.R")
