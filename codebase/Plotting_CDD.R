@@ -11,7 +11,7 @@
 
 #______________________________________________________________________________#
 #Set-up Directory
-setwd("~/GitHub/TXTemp-Simulator")
+setwd("~/GitHub/CONUS-Inferred-Heating-Cooling")
 
 
 #______________________________________________________________________________#
@@ -27,6 +27,7 @@ library(zoo)
 library(ncdf4) 
 library(doParallel)
 library(foreach)
+library(broom)
 
 
 #Source functions
@@ -38,30 +39,38 @@ source("functions/Get_GEV_Plots.R")
 source("functions/Get_Field_Significance.R")
 
 
+
+
+#Source functions
+source("functions/Get_Block_Maximum.R")
+source("functions/Get_Day_Difference.R")
+
 #Load the CONUS Locations
-grid_locs <- read.table("data/CONUS_0_5_deg_lat_lon_index_key.txt", 
-                        header = TRUE, sep=" ")
+load("data/NERC_Regions_lat_lon_index_key.RData")
+
+#Load Population Data
+load("data/NERC_Regions_Population_Count.RData")
+load("data/NERC_Regions_Population_Density.RData")
 
 
-#Load the Texas Interconnect Locations
-grid_locs <- read.table("data/ERCOT_0_5_deg_lat_lon_index_key.csv", 
-                        header = TRUE, sep=",")
-colnames(grid_locs)[1:2] <- c("Longitude", "Latitude")
-grid_locs$Longitude <- grid_locs$Longitude - 360
+#NERC Shapefiles
+nerc_sf <- readOGR(dsn= paste0("data/sf/NERC_Regions-shp"),
+                   layer="NERC_Regions_EIA")
 
 
-#Load the Texas Cities Data
-cities <- read.table("data/Texas_cities.txt", sep=" ", header = TRUE)
+###MAKE A Selection
+nerc_sf$NERC_Label
+sel_rto <- 2
+grid_locs <- grid_nerc[[sel_rto]]
+nerc_cur <- tidy(nerc_sf[sel_rto,])
+nerc_label <- nerc_sf$NERC_Label[sel_rto]
 
+#Add the Population Data
+grid_locs$Pop_Wts <- Pop_count_nerc[[sel_rto]][,5]/sum(Pop_count_nerc[[sel_rto]][,5])
 
-#Lat-Lon Points for CONUS
-lat_cn <- c(24,51);lon_cn <- c(-125,-63)
-
-#Lat-Lon Points for CONUS
-lat_tx <- c(26,37);lon_tx <- c(-107,-93)
-
-#Select usage
-lat_us <- lat_tx; lon_us <- lon_tx
+#Load the Processed CDD Data
+load("data/processed_data/MISO_CDD.RData")
+RTO <- MISO
 
 
 #______________________________________________________________________________#
@@ -78,12 +87,10 @@ ggplot() +
            fill = "#D3D3D3", color = "#000000", size = 0.15) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = "#D3D3D3", color = "#000000", size = 0.15) +
-  scale_x_continuous(name = " ", limits = c(lon_us[1], lon_us[2]))+
-  scale_y_continuous(name = " ", limits = c(lat_us[1], lat_us[2])) +
+  scale_x_continuous(name = " ", limits = c(-125, -60))+
+  scale_y_continuous(name = " ", limits = c(20, 55)) +
   geom_point(data = grid_locs, aes(x=Longitude, y = Latitude),
              size = 0.5, color = 'red') +
-  geom_point(data = cities, aes(x=Longitude, y = Latitude),
-             size = 2, color = 'blue') +
   ggtitle("Temperature Grid Points")
 
 
@@ -93,8 +100,7 @@ pdf("figures/ERCOT_CDD.pdf")
 
 
 ###Reading the data
-mean_cdd <- read.table("data/processed_data/ERCOT_Mean_CDD.txt", sep=" ", 
-                       header = TRUE)
+mean_cdd <- RTO$Mean
 
 
 ###Plot 1 -  Mean CDD across AOI.
@@ -103,14 +109,10 @@ ggplot() +
            fill = "#D3D3D3", color = "#000000", size = 0.15) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = "#D3D3D3", color = "#000000", size = 0.15) +
-  scale_x_continuous(name = " ", limits = c(lon_us[1], lon_us[2]))+
-  scale_y_continuous(name = " ", limits = c(lat_us[1], lat_us[2])) +
+  scale_x_continuous(name = " ", limits = c(-125, -60))+
+  scale_y_continuous(name = " ", limits = c(20, 55)) +
   geom_tile(data = grid_locs, aes(x=Longitude, y = Latitude,
                                   fill = colMeans(mean_cdd))) +
-  geom_point(data = cities, aes(x=Longitude, y = Latitude),
-             size = 2, color = 'brown') +
-  geom_text(data = cities, aes(x=Longitude, y = Latitude, label = City),
-            hjust=0, vjust=1, size = 5) +
   scale_fill_gradient2(midpoint=mean(colMeans(mean_cdd)),
                        low="blue", mid="white",high="red") +
   labs(title = "Profile of Mean CDD across CONUS",
@@ -135,9 +137,7 @@ get_mk_plot(Data_Matrix = mean_cdd,
             Sub_Title = paste0("Annual Average", fs_test),
             Grids = grid_locs,
             Legend_Title  = "deg-hrs \n /decade",
-            Type = "Values",
-            lon_bx = lon_us, lat_bx = lat_us,
-            Cities = cities)
+            Type = "Values")
 
 
 
@@ -148,9 +148,7 @@ get_mk_plot(Data_Matrix = mean_cdd,
 #Block-Sizes
 block_sizes <- c(6,12,24,72, 168, 336) #hours
 
-#Load the data
-load("data/processed_data/ERCOT_CDD_Site_Level.RData")
-
+CDD_Site_Level <- RTO$Site_Level
 
 ###Analysis of trends in the values. 
 
@@ -158,17 +156,15 @@ for(i in 1:length(block_sizes)){
   
   cur_block <- block_sizes[i]
   
-  fs_test <- get_field_significance(Data_Matrix = CONUS_CDD_Site_Level[[1]][[i]],
+  fs_test <- get_field_significance(Data_Matrix = CDD_Site_Level[[1]][[i]],
                                     p_thresh = 0.05)
   
-  get_mk_plot(Data_Matrix = CONUS_CDD_Site_Level[[1]][[i]],
+  get_mk_plot(Data_Matrix = CDD_Site_Level[[1]][[i]],
               Field_Name = "CDD",
               Sub_Title = paste0("Block Size - ", cur_block, " hours", fs_test),
               Grids = grid_locs,
               Legend_Title  = "deg-hrs \n /decade",
-              Type = "Values",
-              lon_bx = lon_us, lat_bx = lat_us,
-              Cities = cities)
+              Type = "Values")
 }
 
 
@@ -179,7 +175,7 @@ for(i in 1:length(block_sizes)){
   cur_block <- block_sizes[i]
   
   #Dates corresponding to annual maximum
-  cur_dates <- CONUS_CDD_Site_Level[[2]][[i]]
+  cur_dates <- CDD_Site_Level[[2]][[i]]
   
   
   hd_Dates <- get_num_of_days(Data_Matrix = cur_dates,
@@ -196,13 +192,11 @@ for(i in 1:length(block_sizes)){
               Sub_Title = paste0("Block Size - ", cur_block, " hours", fs_test),
               Grids = grid_locs,
               Legend_Title  = "Days \n /decade",
-              Type = "Dates",
-              lon_bx = lon_us, lat_bx = lat_us,
-              Cities = cities)
+              Type = "Dates")
   
 }
 
-CONUS_CDD_Site_Level <- NULL
+CDD_Site_Level <- NULL
 
 #______________________________________________________________________________#
 #### Analysis of trends in aggregated block maxima across CONUS #####
@@ -210,14 +204,14 @@ CONUS_CDD_Site_Level <- NULL
 
 
 #Load the data
-load("data/processed_data/ERCOT_CDD_Grid_Level.RData")
+CDD_Grid_Level <- RTO$Grid_Level
 
 for(jk in 1:length(block_sizes)){
   
   cur_block <- block_sizes[jk]
 
   #MK-Test on the Results
-  mktest <- sens.slope(CONUS_CDD_Grid_Level[[1]][[jk]]/cur_block)
+  mktest <- sens.slope(CDD_Grid_Level[[1]][[jk]]/cur_block)
   if(mktest$p.value < 0.05){
     signif <- "Signficant"
   } else {
@@ -225,7 +219,7 @@ for(jk in 1:length(block_sizes)){
   }
   
   #MK-Test on the Dates.
-  Dates <- matrix(data = CONUS_CDD_Grid_Level[[2]][[jk]], ncol = 1)
+  Dates <- matrix(data = CDD_Grid_Level[[2]][[jk]], ncol = 1)
   hd_Dates <- get_num_of_days(Data_Matrix = Dates,
                               Ref_Date = "01-01",
                               Type="CDD")
@@ -238,7 +232,7 @@ for(jk in 1:length(block_sizes)){
   
   
   par(mar = c(5,5,8,3))
-  plot(1950:2020, CONUS_CDD_Grid_Level[[1]][[jk]]/cur_block, type='l',
+  plot(1950:2021, CDD_Grid_Level[[1]][[jk]]/cur_block, type='l',
        xlab = "Year", ylab = "Inferred Demand for Cooling (deg C)",
        main = paste0("Aggregated CDD with Block - ", cur_block, " hrs"),
        cex.main = 1.5, cex.lab = 1.25, lwd = 3)
@@ -257,17 +251,15 @@ for(jk in 1:length(block_sizes)){
   #                   lon_bx = lon_us, lat_bx = lat_us)
   
   #Run the field Significance Test
-  fs_test <- get_field_significance(Data_Matrix = CONUS_CDD_Grid_Level[[3]][[jk]],
+  fs_test <- get_field_significance(Data_Matrix = CDD_Grid_Level[[3]][[jk]],
                                     p_thresh = 0.05)
   
-  get_mk_plot(Data_Matrix = CONUS_CDD_Grid_Level[[3]][[jk]]/cur_block,
+  get_mk_plot(Data_Matrix = CDD_Grid_Level[[3]][[jk]]/cur_block,
               Field_Name = "Aggregate CDD",
               Sub_Title = paste0("Block Size - ", cur_block, " hours", fs_test),
               Grids = grid_locs,
               Legend_Title  = "deg-hrs \n /decade",
-              Type = " ",
-             lon_bx = lon_us, lat_bx = lat_us,
-              Cities = cities)
+              Type = " ")
   
   #get_pca_analysis(Data_Matrix = CONUS_CDD_Grid_Level[[3]][[jk]],
   #                 npcs = 4,
