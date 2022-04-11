@@ -33,22 +33,39 @@ library(zoo)
 library(ncdf4) 
 library(doParallel)
 library(foreach)
-
-
+library(broom)
 
 #Source functions
 source("functions/Get_Block_Maximum.R")
 source("functions/Get_Day_Difference.R")
 
 #Load the CONUS Locations
-grid_locs <- read.table("data/CONUS_0_5_deg_lat_lon_index_key.txt", 
-                        header = TRUE, sep=" ")
+load("data/NERC_Regions_lat_lon_index_key.RData")
+
+#Load Population Data
+load("data/NERC_Regions_Population_Count.RData")
+load("data/NERC_Regions_Population_Density.RData")
+
+
+#NERC Shapefiles
+nerc_sf <- readOGR(dsn= paste0("data/sf/NERC_Regions-shp"),
+                   layer="NERC_Regions_EIA")
+
+
+###MAKE A Selection
+nerc_sf$NERC_Label
+sel_rto <- 2
+grid_locs <- grid_nerc[[sel_rto]]
+nerc_cur <- tidy(nerc_sf[sel_rto,])
+nerc_label <- nerc_sf$NERC_Label[sel_rto]
+
+#Add the Population Data
+grid_locs$Pop_Wts <- Pop_count_nerc[[sel_rto]][,5]/sum(Pop_count_nerc[[sel_rto]][,5])
 
 
 #______________________________________________________________________________#
 #Hyper-Parameters
 thresh_temp <- 291.5 #65 Fahrenheit #
-#grid_locs$Pop_Wts <- grid_pop$X2020_Count/sum(grid_pop$X2020_Count)
 
 #Plotting the grid points
 world <- map_data("world")
@@ -65,13 +82,15 @@ ggplot() +
   scale_y_continuous(name = " ", limits = c(20, 55)) +
   geom_point(data = grid_locs, aes(x=Longitude, y = Latitude),
              size = 0.5, color = 'red') +
-  ggtitle("Temperature Grid Points - CONUS - Code - Precheck")
+  geom_polygon(data = nerc_cur, mapping = aes( x = long, y = lat, group = group), 
+               fill = NA, color = 'black', size = 1.2) +
+  ggtitle(paste0("CDD - Consistency Check - ", nerc_label))
 
 
 #______________________________________________________________________________#
 #______________________________________________________________________________#
 #______________________________________________________________________________#
-###Objective 1:- Annual Average. Matrix. Size - 71 x 3285.
+###Objective 1:- Annual Average. Matrix. Size - 72 x No of Grid Cells in RTO.
 
 
 ###Method
@@ -85,8 +104,8 @@ ggplot() +
 
 
 #Hyper-Parameters
-yrs <- 1950:2020
-Mean_CDD <- matrix(NA, nrow = 71, ncol = nrow(grid_locs))
+yrs <- 1950:2021
+Mean_CDD <- matrix(NA, nrow = length(yrs), ncol = nrow(grid_locs))
 
 
 pb = txtProgressBar(min = 1, max = length(yrs), initial = 1) 
@@ -148,15 +167,13 @@ ggplot() +
   scale_fill_gradient2(midpoint=median(colMeans(Mean_CDD)),
                        low="blue", mid="white",high="red",
                        name = "CDD") +
-  ggtitle("Mean CDD - CONUS - Code - Consistency Check")
-
-
-#Saving the results
-write.table(Mean_CDD, "data/processed_data/CONUS_Mean_CDD.txt")
+  geom_polygon(data = nerc_cur, mapping = aes( x = long, y = lat, group = group), 
+               fill = NA, color = 'black', size = 1.2) +
+  ggtitle(paste0("Mean CDD - Consistency Check - ", nerc_label))
 
 
 #Clean-up for next objectives
-CDD <- Mean_CDD <- nc_data <- t2m_land <- NULL
+CDD <- nc_data <- t2m_land <- NULL
 
 
 
@@ -164,8 +181,8 @@ CDD <- Mean_CDD <- nc_data <- t2m_land <- NULL
 #______________________________________________________________________________#
 #______________________________________________________________________________#
 #______________________________________________________________________________#
-###Objective 2:- Site-level Block Maxima. Size - 71 x 3285 x 6
-###Objective 3:- Site-level Block Maxima. Size - 71 x 3285 x 6
+###Objective 2:- Site-level Block Maxima. Size - 72 x No Grid Cells x 6
+###Objective 3:- Site-level Block Maxima Date. Size - 72 x No Grid Cells x 6
 
 
 ###Output Characteristics
@@ -179,11 +196,11 @@ CDD <- Mean_CDD <- nc_data <- t2m_land <- NULL
 #[[1]] - Contains all the Values
 #[[2]] - Contains all the Dates
 
-#[[1]][[1]] - Data Frame [71 x 3285] with ann-max values.
+#[[1]][[1]] - Data Frame [72 x 3285] with ann-max values.
 
 
 #Hyper-parameters
-yrs <- 1950:2020
+yrs <- 1950:2021
 block_sizes <- c(6,12,24,72, 168, 336) #hours
 
 
@@ -315,8 +332,8 @@ CONUS_CDD_Site_Level <- list()
 CONUS_CDD_Site_Level[[1]] <- ann_max_values
 CONUS_CDD_Site_Level[[2]] <- ann_max_dates
 
-save(CONUS_CDD_Site_Level, 
-     file = paste0("data/processed_data/CONUS_CDD_Site_Level.RData") )
+#save(CONUS_CDD_Site_Level, 
+#     file = paste0("data/processed_data/ERCOT_CDD_Site_Level.RData") )
 
 
 ##Consistency Check 
@@ -387,9 +404,9 @@ ggplot() +
 #______________________________________________________________________________#
 #______________________________________________________________________________#
 #______________________________________________________________________________#
-###Objective 3:- Grid-level Block Maxima. Size - 71 x 6
-###Objective 4:- Grid-level Block Maxima Dates. Size - 71 x 6
-###Objective 5:- Site-level CDD Contribution. Size - 71 x 3285 x 6
+###Objective 3:- Grid-level Block Maxima. Size - 72 x 6
+###Objective 4:- Grid-level Block Maxima Dates. Size - 72 x 6
+###Objective 5:- Site-level CDD Contribution. Size - 72 x 3285 x 6
 
 ###Output Characteristics
 #1. Saved as a .RData file
@@ -403,7 +420,7 @@ ggplot() +
 
 
 #Hyper-parameters
-yrs <- 1950:2020
+yrs <- 1950:2021
 block_sizes <- c(6,12,24,72, 168, 336) #hours
 
 #Set-up Storage
@@ -458,7 +475,7 @@ for(y in 1:length(yrs)){
   CDD[CDD<0] <- 0
   
   #Multiply by Population Density Weights
-  #CDD <- sweep(CDD, MARGIN=2, grid_locs$Pop_Wts , `*`)
+  CDD <- sweep(CDD, MARGIN=2, grid_locs$Pop_Wts , `*`)
   
   CDD_Agg <- rowSums(CDD)
   
@@ -537,14 +554,14 @@ CONUS_CDD_Grid_Level[[1]] <- Grid_Values
 CONUS_CDD_Grid_Level[[2]] <- Grid_Dates
 CONUS_CDD_Grid_Level[[3]] <- Site_Values
 
-save(CONUS_CDD_Grid_Level, 
-     file = paste0("data/processed_data/CONUS_CDD_Grid_Level.RData"))
+#save(CONUS_CDD_Grid_Level, 
+#     file = paste0("data/processed_data/ERCOT_CDD_Grid_Level.RData"))
 
 
 #Consistency Checks
 
 #Plot - 6 Hours
-plot(1950:2020, CONUS_CDD_Grid_Level[[1]][[1]], type='l',
+plot(1950:2021, CONUS_CDD_Grid_Level[[1]][[1]], type='l',
      xlab = "Year", ylab = "Degree-Hours/Ann Max Event", 
      main = " Annual Maximum CDD across CONUS for 6 hr events")
 
@@ -587,3 +604,11 @@ ggplot() +
   ggtitle("Grid Maximum  - Block Size 3 Days - Code Consistency Check")
 
 
+#______________________________________________________________________________#
+####Saving the results
+
+MISO <- list(Mean = Mean_CDD, 
+             Site_Level = CONUS_CDD_Site_Level,
+             Grid_Level = CONUS_CDD_Grid_Level)
+
+save(MISO, file = paste0("data/processed_data/MISO_CDD.RData"))
