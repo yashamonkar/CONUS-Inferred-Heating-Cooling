@@ -16,6 +16,9 @@ __pycache__/
 # Shape Files
 *.nc
 
+# Compressed Files
+*.zip
+
 # Distribution / packaging
 .Python
 build/
