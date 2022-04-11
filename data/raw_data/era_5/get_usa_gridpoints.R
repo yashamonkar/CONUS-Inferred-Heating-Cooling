@@ -66,4 +66,4 @@ points(grids_usa$Longitude, grids_usa$Latitude, pch = 19, size =0.01, col='red')
 
 #Saving the results
 grids_usa$LOC <- NULL
-write.table(grids_usa, "CONUS_0_5_deg_lat_lon_index_key.txt", sep =" ")
+write.table(grids_usa, "~/GitHub/CONUS-Inferred-Heating-Cooling/data/CONUS_0_5_deg_lat_lon_index_key.txt", sep =" ")
