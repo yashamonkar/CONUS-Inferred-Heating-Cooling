@@ -87,7 +87,8 @@ for(i in 1:n_regions){
                pch = 19, size =0.01, col=i)
 }
 
+grid_nerc <- grids_usa
 
 #Saving the results
-save(grids_usa, 
+save(grid_nerc, 
      file = paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/NERC_Regions_lat_lon_index_key.RData"))
