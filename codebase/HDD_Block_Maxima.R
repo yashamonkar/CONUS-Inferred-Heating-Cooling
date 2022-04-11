@@ -31,15 +31,35 @@ library(zoo)
 library(ncdf4) 
 library(doParallel)
 library(foreach)
-
+library(broom)
+library(rgdal)
 
 #Source functions
 source("functions/Get_Block_Maximum.R")
 source("functions/Get_Day_Difference.R")
 
 #Load the CONUS Locations
-grid_locs <- read.table("data/CONUS_0_5_deg_lat_lon_index_key.txt", 
-                        header = TRUE, sep=" ")
+load("data/NERC_Regions_lat_lon_index_key.RData")
+
+#Load Population Data
+load("data/NERC_Regions_Population_Count.RData")
+load("data/NERC_Regions_Population_Density.RData")
+
+
+#NERC Shapefiles
+nerc_sf <- readOGR(dsn= paste0("data/sf/NERC_Regions-shp"),
+                   layer="NERC_Regions_EIA")
+
+
+###MAKE A Selection
+nerc_sf$NERC_Label
+sel_rto <- 2
+grid_locs <- grid_nerc[[sel_rto]]
+nerc_cur <- tidy(nerc_sf[sel_rto,])
+nerc_label <- nerc_sf$NERC_Label[sel_rto]
+
+#Add the Population Data
+grid_locs$Pop_Wts <- Pop_count_nerc[[sel_rto]][,5]/sum(Pop_count_nerc[[sel_rto]][,5])
 
 
 
@@ -63,7 +83,9 @@ ggplot() +
   scale_y_continuous(name = " ", limits = c(20, 55)) +
   geom_point(data = grid_locs, aes(x=Longitude, y = Latitude),
              size = 0.5, color = 'red') +
-  ggtitle("Temperature Grid Points - CONUS - Code - Precheck")
+  geom_polygon(data = nerc_cur, mapping = aes( x = long, y = lat, group = group), 
+                                                     fill = NA, color = 'black', size = 1.2) +
+  ggtitle(paste0("HDD - Consistency Check - ", nerc_label))
 
 
 #______________________________________________________________________________#
@@ -138,9 +160,6 @@ for(y in 1:length(yrs)){
   lon <- ncvar_get(nc_data, "longitude")
   lat <- ncvar_get(nc_data, "latitude")
   t2m <- ncvar_get(nc_data, "t2m") 
-  if(yr == 2021){t2m = t2m[,,1,]
-  t2m[is.na(t2m)] <- 300   #To be changed later
-  }
   t2m <- t2m[,,1:hrs_ahead]
   
   #Subset to needed values
