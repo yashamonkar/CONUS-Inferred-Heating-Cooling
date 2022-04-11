@@ -90,4 +90,4 @@ for(i in 1:n_regions){
 
 #Saving the results
 save(grids_usa, 
-     file = paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/NERC_Regions_lat_lon_index_Key.RData"))
+     file = paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/NERC_Regions_lat_lon_index_key.RData"))
