@@ -1,10 +1,14 @@
 #______________________________________________________________________________#
 ####SCRIPT TO PROCESS THE POPULATION COUNT and DENSITY DATASET################
 
+#Population Dataset:- Gridded Population of the World (GPW), v4.
+#Source:- https://sedac.ciesin.columbia.edu/data/collection/gpw-v4
+#Institution - SEDAC, CIESIN, NASA
+
 
 ###INPUT
-#1. GRID BOX USED TO DOWNLOAD THE ERA-5 data. 
-#2. USA SHAPE FILE. 
+#1. Temperature Grid Cells within CONUS.
+#2. Population Data
 
 
 ###OUTPUT
@@ -196,7 +200,7 @@ ggplot() +
                                   fill = Density)) +
   scale_fill_gradient2(midpoint=median(grid_locs$Density, na.rm = TRUE),
                        low="blue", mid="white",high="red") +
-  ggtitle("Popluation Count and Temperature Grid Points")
+  ggtitle("Popluation Density and Temperature Grid Points")
 
 
 
@@ -206,7 +210,7 @@ ggplot() +
 (pop_count[,1]/pop_dens[,1]) /(pop_count[,2]/pop_dens[,2])
 
 pop_data <- cbind(pop_dens, pop_count)
-
+pop_data[is.na(pop_data)] <- 0 #Convert Nas to 0
 
 #Saving the results
-write.table(pop_data, "ERCOT_Population.txt", sep = " ")
+write.table(pop_data, "~/GitHub/CONUS-Inferred-Heating-Cooling/data/CONUS_Population.txt", sep = " ")
