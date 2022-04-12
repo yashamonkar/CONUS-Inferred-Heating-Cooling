@@ -53,7 +53,7 @@ nerc_sf <- readOGR(dsn= paste0("data/sf/NERC_Regions-shp"),
 
 ###MAKE A Selection
 nerc_sf$NERC_Label
-sel_rto <- 2
+sel_rto <- 8
 grid_locs <- grid_nerc[[sel_rto]]
 nerc_cur <- tidy(nerc_sf[sel_rto,])
 nerc_label <- nerc_sf$NERC_Label[sel_rto]
@@ -106,7 +106,7 @@ ggplot() +
 
 #Hyper-Parameters
 yrs <- 1951:2021
-Mean_HDD <- matrix(NA, nrow = 71, ncol = nrow(grid_locs))
+Mean_HDD <- matrix(NA, nrow = length(yrs), ncol = nrow(grid_locs))
 
 
 pb = txtProgressBar(min = 1, max = length(yrs), initial = 1) 
@@ -119,7 +119,7 @@ for(y in 1:length(yrs)){
   
   #Get the number of hours from Jan-01 to June 30
   st_date <- as.POSIXct(paste0("01-01-",yr," 00:00"), format="%m-%d-%Y %H:%M")
-  yr_end <- as.POSIXct(paste0("06-30-",yr," 00:00"), format="%m-%d-%Y %H:%M")
+  yr_end <- as.POSIXct(paste0("06-30-",yr," 23:00"), format="%m-%d-%Y %H:%M")
   yr_start <- as.POSIXct(paste0("07-01-",yr-1," 00:00"), format="%m-%d-%Y %H:%M")
   hrs_ahead <- difftime(yr_end,st_date, units = "hours")
   hrs_behind <- difftime(st_date,yr_start, units = "hours")
@@ -208,15 +208,13 @@ ggplot() +
   scale_fill_gradient2(midpoint=median(colMeans(Mean_HDD)),
                        low="blue", mid="white",high="red",
                        name = "HDD") +
-  ggtitle("Mean HDD - CONUS - Code - Consistency Check")
-
-
-#Saving the results
-write.table(Mean_HDD, "data/processed_data/CONUS_Mean_HDD.txt")
+  geom_polygon(data = nerc_cur, mapping = aes( x = long, y = lat, group = group), 
+                                                   fill = NA, color = 'black', size = 1.2) +
+  ggtitle(paste0("Mean HDD - Consistency Check - ", nerc_label))
 
 
 #Clean-up for next objectives
-HDD <- Mean_HDD <- nc_data <- t2m_land <- NULL
+HDD <- nc_data <- t2m_land <- NULL
 
 
 
@@ -262,7 +260,7 @@ get_hdd <- function(yr, block_size, Grids, thresh_temp){
   
   #Get the number of hours from Jan-01 to June 30
   st_date <- as.POSIXct(paste0("01-01-",yr," 00:00"), format="%m-%d-%Y %H:%M")
-  yr_end <- as.POSIXct(paste0("06-30-",yr," 00:00"), format="%m-%d-%Y %H:%M")
+  yr_end <- as.POSIXct(paste0("06-30-",yr," 23:00"), format="%m-%d-%Y %H:%M")
   yr_start <- as.POSIXct(paste0("07-01-",yr-1," 00:00"), format="%m-%d-%Y %H:%M")
   hrs_ahead <- difftime(yr_end,st_date, units = "hours")
   hrs_behind <- difftime(st_date,yr_start, units = "hours")
@@ -303,9 +301,6 @@ get_hdd <- function(yr, block_size, Grids, thresh_temp){
   lon <- ncvar_get(nc_data, "longitude")
   lat <- ncvar_get(nc_data, "latitude")
   t2m <- ncvar_get(nc_data, "t2m") 
-  if(yr == 2021){t2m = t2m[,,1,]
-  t2m[is.na(t2m)] <- 300   #To be changed later
-  }
   t2m <- t2m[,,1:hrs_ahead]
   
   #Subset to needed values
@@ -421,8 +416,6 @@ CONUS_HDD_Site_Level[[1]] <- ann_max_values
 CONUS_HDD_Site_Level[[2]] <- ann_max_dates
 
 
-save(CONUS_HDD_Site_Level, 
-     file = paste0("data/processed_data/CONUS_HDD_Site_Level.RData") )
 
 
 ##Consistency Check 
@@ -520,7 +513,7 @@ for(y in 1:length(yrs)){
   
   #Get the number of hours from Jan-01 to June 30
   st_date <- as.POSIXct(paste0("01-01-",yr," 00:00"), format="%m-%d-%Y %H:%M")
-  yr_end <- as.POSIXct(paste0("06-30-",yr," 00:00"), format="%m-%d-%Y %H:%M")
+  yr_end <- as.POSIXct(paste0("06-30-",yr," 23:00"), format="%m-%d-%Y %H:%M")
   yr_start <- as.POSIXct(paste0("07-01-",yr-1," 00:00"), format="%m-%d-%Y %H:%M")
   hrs_ahead <- difftime(yr_end,st_date, units = "hours")
   hrs_behind <- difftime(st_date,yr_start, units = "hours")
@@ -561,9 +554,6 @@ for(y in 1:length(yrs)){
   lon <- ncvar_get(nc_data, "longitude")
   lat <- ncvar_get(nc_data, "latitude")
   t2m <- ncvar_get(nc_data, "t2m") 
-  if(yr == 2021){t2m = t2m[,,1,]
-  t2m[is.na(t2m)] <- 300   #To be changed later
-  }
   t2m <- t2m[,,1:hrs_ahead]
   
   #Subset to needed values
@@ -592,7 +582,7 @@ for(y in 1:length(yrs)){
   HDD[HDD<0] <- 0
   
   #Multiply by Population Density Weights
-  #HDD <- sweep(HDD, MARGIN=2, grid_locs$Pop_Wts , `*`)
+  HDD <- sweep(HDD, MARGIN=2, grid_locs$Pop_Wts , `*`)
   
   HDD_Agg <- rowSums(HDD)
   max_val <- max_dates <- max_site_vals <-  list()
@@ -670,9 +660,6 @@ CONUS_HDD_Grid_Level[[1]] <- Grid_Values
 CONUS_HDD_Grid_Level[[2]] <- Grid_Dates
 CONUS_HDD_Grid_Level[[3]] <- Site_Values
 
-save(CONUS_HDD_Grid_Level, 
-     file = paste0("data/processed_data/CONUS_HDD_Grid_Level.RData"))
-
 
 #Consistency Checks
 
@@ -719,4 +706,13 @@ ggplot() +
                        name = "HDD") +
   ggtitle("Grid Maximum  - Block Size 3 Days - Code Consistency Check")
 
+
+#______________________________________________________________________________#
+####Saving the results
+
+RTO <- list(Mean = Mean_HDD, 
+            Site_Level = CONUS_HDD_Site_Level,
+            Grid_Level = CONUS_HDD_Grid_Level)
+
+save(RTO, file = paste0("data/processed_data/Int_HDD.RData"))
 
