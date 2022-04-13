@@ -37,6 +37,8 @@ library(zoo)
 library(ncdf4) 
 library(broom)
 library(rgdal)
+library(doParallel)
+library(foreach)
 
 #Source functions
 source("functions/Get_Block_Maximum.R")
@@ -78,27 +80,31 @@ scenario <- 7
 
 #______________________________________________________________________________#
 ###----Code to get regional block Maxima----###
-NERC_HDD_Region <- list()
-
-for(rto in 1:n_regions){
+get_hdd_maxima <- function(Population, Temp_grids, 
+                           Years, thresh_temp, 
+                           block_sizes, Scenario){
+  
+  #Library
+  library(zoo)
+  library(ncdf4) 
   
   #Population Weights
-  pop_cur <- population[[rto]]
-  population_wts <- pop_cur[,scenario]/sum(pop_cur[,scenario])
+  pop_cur <- Population[[rto]]
+  population_wts <- pop_cur[,Scenario]/sum(pop_cur[,Scenario])
   
   #Temperature Grids
-  grid_locs <- all_grids[[rto]]
+  grid_locs <- Temp_grids[[rto]]
   
   #Set-up Storage
   HDD_Grid_Values <- HDD_Dates <- HDD_Site_Values <- list()
   
-  pb = txtProgressBar(min = 1, max = length(yrs), initial = 1) 
-  for(y in 1:length(yrs)){
+  pb = txtProgressBar(min = 1, max = length(Years), initial = 1) 
+  for(y in 1:length(Years)){
     
     setTxtProgressBar(pb,y)  #Progress
     
     #Current year
-    yr <- yrs[y]
+    yr <- Years[y]
     
     #Get the number of hours from Jan-01 to June 30
     st_date <- as.POSIXct(paste0("01-01-",yr," 00:00"), format="%m-%d-%Y %H:%M")
@@ -248,16 +254,53 @@ for(rto in 1:n_regions){
   HDD_Regional[[2]] <- Grid_Dates
   HDD_Regional[[3]] <- Site_Values
   
+  ###Saving 
+  return(HDD_Regional)
+  
+  
+}
+
+#------------------------------------------------------------------------------#
+#Running the function
+cores=detectCores()
+registerDoParallel(cores)
+start.time <- Sys.time()
+NERC_HDD_Region <- foreach(rto = 1:n_regions, .verbose = TRUE) %dopar% {
+  
+  
+  get_hdd_maxima(Population = population, 
+                 Temp_grids = all_grids,
+                 Years = yrs,
+                 thresh_temp = thresh_temp,
+                 block_sizes = block_sizes, 
+                 Scenario=scenario)
+}
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+print(time.taken)
+stopImplicitCluster()
+
+
+#______________________________________________________________________________#
+##Saving the results
+save(NERC_HDD_Region, file = paste0("data/processed_data/HDD_Regional_2020.RData"))
+
+
+
+#------------------------------------------------------------------------------#
+#Plots - Consistency Check
+for(i in 1:length(NERC_HDD_Region)){
+  
   #Plots - Consistency Checks
-  plot(yrs, HDD_Regional[[1]][[1]], type='l',
+  plot(yrs, NERC_HDD_Region[[i]][[1]][[1]], type='l',
        xlab = "Year", ylab = "Degree-Hours/Ann Max Event", 
        main = " Annual Maximum HDD across CONUS for 6 hr events")
-  mtext(paste0(nerc_labels[rto]), side = 3,
+  mtext(paste0(nerc_labels[i]), side = 3,
         cex = 1.15)
   
   #Spatial Plots
-  sub_region <- nerc_sf[rto,]
-  pt_dt <- HDD_Regional[[3]][[1]]
+  sub_region <- nerc_sf[i,]
+  pt_dt <- NERC_HDD_Region[[i]][[3]][[1]]
   pt_dt <- colMeans(pt_dt)
   
   p1 <- ggplot() +
@@ -269,24 +312,13 @@ for(rto in 1:n_regions){
     scale_y_continuous(name = " ", limits = c(20, 55)) +
     geom_polygon(data = sub_region, mapping = aes( x = long, y = lat, group = group), 
                  fill = NA, color = 'black', size = 1.2) +
-    geom_tile(data = grid_locs, aes(x=Longitude, y = Latitude, 
-                                    fill = pt_dt)) +
+    geom_tile(data = all_grids[[i]], aes(x=Longitude, y = Latitude, 
+                                         fill = pt_dt)) +
     scale_fill_gradient2(midpoint=median(pt_dt),
                          low="blue", mid="white",high="red",
                          name = "HDD") +
     ggtitle("Grid Maximum  - Block Size 6 Hours - Code Consistency Check")
   print(p1)
-  
-  
-  ###Saving 
-  NERC_HDD_Region[[rto]] <- HDD_Regional
-  
-  
-  
 }
 
-
-#______________________________________________________________________________#
-##Saving the results
-save(NERC_HDD_Region, file = paste0("data/processed_data/HDD_Regional_2020.RData"))
 
