@@ -13,7 +13,8 @@
 
 
 ###OUTPUT
-#1. Population Count and Density for each grid cell within CONUS. 
+#1. Lat-Lon Population Grid Cells for each sub-region.
+#2. Closest temperature grid cell for that sub-region. 
 
 
 #______________________________________________________________________________#
@@ -25,18 +26,22 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 #Packages
 library(ncdf4)
 library(ggplot2)
+library(dplyr)
+library(rgdal)
+library(geosphere)
+library(doParallel)
+library(foreach)
 
 #Plotting the grid points
 world <- map_data("world")
 us <- map_data("state")
 
 
-#Get the Texas Grid Points
-load("~/GitHub/CONUS-Inferred-Heating-Cooling/data/NERC_Regions_lat_lon_index_key.RData")
-grid_locs <- bind_rows(lapply(grid_nerc,data.frame))
-nerc_regions <- length(grid_nerc)
-
-
+#NERC Shapefiles
+nerc_sf <- readOGR(dsn= paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/sf/NERC_Regions-shp"),
+                   layer="NERC_Regions_EIA")
+nerc_labels <- nerc_sf$NERC_Label
+nerc_regions <- length(nerc_sf$FID)
 
 
 #------------------------------------------------------------------------------#
@@ -50,8 +55,6 @@ print(nc_data)
 #Get the points
 lon <- ncvar_get(nc_data, "longitude")
 lat <- ncvar_get(nc_data, "latitude")
-ras <- ncvar_get(nc_data, "raster")
-pop_nc <- ncvar_get(nc_data, "Population Count, v4.11 (2000, 2005, 2010, 2015, 2020): 15 arc-minutes")
 nc_close(nc_data) #Closing the Netcdf file. 
 
 #Make a lat-lon box
@@ -68,182 +71,161 @@ ggplot() +
            fill = "#D3D3D3", color = "#000000", size = 0.15) +
   scale_x_continuous(name = " ", limits = c(-125, -66))+
   scale_y_continuous(name = " ", limits = c(24, 50)) +
-  geom_point(data = grid_locs, aes(x=Longitude, y = Latitude), color = 'red') +
+  geom_polygon(data = nerc_sf, mapping = aes( x = long, y = lat, group = group), 
+               fill = NA, color = 'black', size = 1.2) +
   geom_point(data = all_grids, aes(x=Longitude, y = Latitude), 
              color = 'blue', size = 0.5) +
   ggtitle("Popluation and Temperature Grid Points - Visual Check")
 
 
-#------------------------------------------------------------------------------#
-#Compute Population Count per nerc region
-Pop_count_nerc <- list()
+
+#______________________________________________________________________________#
+###Find all Grid Cells (Population Data) within each shapefile###
+sub_region_pop_grids <- list()
+
+#Convert the grids to a spatial dataset
+dat <- all_grids
+coordinates(dat) <- ~ Longitude + Latitude # Assignment modified according
+proj4string(dat) <- proj4string(nerc_sf) # Set the projection of the SpatialPointsDataFrame
+
 
 for(n in 1:nerc_regions) {
   
-  grid_locs <- grid_nerc[[n]]
+  #Current Sub-Region
+  sub_region <- nerc_sf[n,]
   
-  #Set-up Population Storage Dataset
-  pop_count <- matrix(NA, ncol = 5, nrow = nrow(grid_locs))
-  colnames(pop_count) <- c("2000_Count", "2005_Count", "2010_Count", 
-                         "2015_Count", "2020_Count")
-
-  ###Function to get lat-lon
-  for(j in 1:ncol(pop_count)){
-
-    pop <- list()
-    for(i in 1:nrow(grid_locs)){
+  #Find the locations inside the United States
+  loc_sub <- over(dat,sub_region)
+  grids_rto <- all_grids
+  grids_rto$LOC <- loc_sub[,1]
+  grids_rto <- grids_rto[complete.cases(grids_rto), ]
   
-      #Get the 4 sub-grid points
-      gr1 <- c(grid_locs$Longitude[i]+0.125, grid_locs$Lat[i]+0.125)
-      gr2 <- c(grid_locs$Longitude[i]-0.125, grid_locs$Lat[i]+0.125)
-      gr3 <- c(grid_locs$Longitude[i]+0.125, grid_locs$Lat[i]-0.125)
-      gr4 <- c(grid_locs$Longitude[i]-0.125, grid_locs$Lat[i]-0.125)
+  #Plotting the results
+  plot(sub_region, xlim = c(-125, -66),
+       ylim = c(25,50),
+       main = paste0(nerc_labels[n]))
+  points(grids_rto$Longitude, grids_rto$Latitude, size =0.01, col='blue')
   
-      #Population Count
-      p1 <- pop_nc[which(lon == gr1[1]), which(lat == gr1[2]),j]
-      p2 <- pop_nc[which(lon == gr2[1]), which(lat == gr2[2]),j]
-      p3 <- pop_nc[which(lon == gr3[1]), which(lat == gr3[2]),j]
-      p4 <- pop_nc[which(lon == gr4[1]), which(lat == gr4[2]),j]
-      pop[[i]] <- p1+p2+p3+p4
-      
-      }
+  #Save the grid cells within the RTO  
+  grids_rto$LOC <- NULL
+  sub_region_pop_grids[[n]] <- grids_rto
   
-    pop_count[,j] <- unlist(pop)
-    
-    }
-
-  Pop_count_nerc[[n]] <- pop_count
-
-#Final Visual Check
-grid_locs$Pop <- pop_count[,1]
-#Grid Points
-p <- ggplot() +
-  geom_map(dat = world, map = world, aes(x=long, y=lat, map_id = region),
-           fill = "#D3D3D3", color = "#000000", size = 0.15) +
-  geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
-           fill = "#D3D3D3", color = "#000000", size = 0.15) +
-  scale_x_continuous(name = " ", limits = c(-125, -66))+
-  scale_y_continuous(name = " ", limits = c(24, 50)) +
-  geom_tile(data = grid_locs, aes(x=Longitude, y = Latitude, 
-                                   fill = Pop)) +
-  scale_fill_gradient2(midpoint=median(grid_locs$Pop, na.rm = TRUE),
-                       low="blue", mid="white",high="red") +
-  ggtitle("Popluation Count and Temperature Grid Points")
-
-print(p)
-
 }
 
+#Clean-Up
+dat <- grids_rto <- all_grids <- loc_sub <- nc_data <- sub_region <- NULL
 
-#------------------------------------------------------------------------------#
-###Population Density
 
-#Read a population data
-name <- c("gpw_v4_population_density_rev11_15_min.nc")
+#______________________________________________________________________________#
+###Find closet temp grid for each population within each sub-region###
+
+#Read a single ERA-5 download file
+name <- c("~/GitHub/CONUS-Inferred-Heating-Cooling/data/raw_data/era_5/2001.nc")
 nc_data <- nc_open(name)
 print(nc_data) 
 
-#Get the points
 lon <- ncvar_get(nc_data, "longitude")
 lat <- ncvar_get(nc_data, "latitude")
-ras <- ncvar_get(nc_data, "raster")
-pop_nc <- ncvar_get(nc_data, "Population Density, v4.11 (2000, 2005, 2010, 2015, 2020): 15 arc-minutes")
 nc_close(nc_data) #Closing the Netcdf file. 
 
-#Make a lat-lon box
-all_grids <- data.frame(Longitude = rep(lon, length(lat)),
-                        Latitude = rep(lat, each = length(lon)))
+#Set up the lat-lon box
+temp_grids <- data.frame(Longitude = rep(lon, length(lat)),
+                    Latitude = rep(lat, each = length(lon)))
+
+#Setup storage
+sub_region_temp_grids <- list()
+
 
 
 #------------------------------------------------------------------------------#
-#Compute Population Density per nerc region
-Pop_dens_nerc <- list()
+###INPUT
+#1. NERC Shape Files
+#2. Population Grids with Sub-Regions (list)
+#3. All Temperature Grid Cells (Data-Frame)
 
-for(n in 1:nerc_regions) {
-  
-  grid_locs <- grid_nerc[[n]]
-  
-  #Set-up Population Storage Dataset
-  pop_dens <- matrix(NA, ncol = 5, nrow = nrow(grid_locs))
-  colnames(pop_dens) <- c("2000_Density", "2005_Density", "2010_Density", 
-                        "2015_Density", "2020_Density")
+###OUTPUT
+#1. Temperature grid cells associated (nearest) the population grid cells
 
-  ###Function to get lat-lon
-  for(j in 1:ncol(pop_dens)){
+get_temp_grids <- function(Shapefiles, Population_Grids, Temperature_Grids,Iter){
   
-    pop <- list()
-    for(i in 1:nrow(grid_locs)){
+  library(geosphere)
+  
+  #Current Sub-Region
+  sub_region <- Shapefiles[Iter,]
+  
+  #Get the current population Grids
+  pop_grids <- Population_Grids[[Iter]]
+  
+  #Set-Up Temporary Storage
+  tx_grids <- pop_grids
+  
+  
+  pb = txtProgressBar(min = 1, max = nrow(pop_grids), initial = 1)
+  for(i in 1:nrow(pop_grids)){
     
-      #Get the 4 sub-grid points
-      gr1 <- c(grid_locs$Longitude[i]+0.125, grid_locs$Lat[i]+0.125)
-      gr2 <- c(grid_locs$Longitude[i]-0.125, grid_locs$Lat[i]+0.125)
-      gr3 <- c(grid_locs$Longitude[i]+0.125, grid_locs$Lat[i]-0.125)
-      gr4 <- c(grid_locs$Longitude[i]-0.125, grid_locs$Lat[i]-0.125)
+    #Progress-Bar
+    setTxtProgressBar(pb,i)
     
-      #Population Count
-      p1 <- pop_nc[which(lon == gr1[1]), which(lat == gr1[2]),j]
-      p2 <- pop_nc[which(lon == gr2[1]), which(lat == gr2[2]),j]
-      p3 <- pop_nc[which(lon == gr3[1]), which(lat == gr3[2]),j]
-      p4 <- pop_nc[which(lon == gr4[1]), which(lat == gr4[2]),j]
-      pop[[i]] <- p1+p2+p3+p4
+    #Compute distances
+    distances_km <- rep(NA, nrow(Temperature_Grids))
+    for(j in 1:nrow(Temperature_Grids)){
+      distances_km[j] <- distHaversine(c(pop_grids$Longitude[i], pop_grids$Latitude[i]),
+                                       c(Temperature_Grids$Longitude[j], Temperature_Grids$Latitude[j]),
+                                       r=6378137)
     }
-  
-    pop_dens[,j] <- unlist(pop)
-  
+    
+    tx_grids[i,] <- Temperature_Grids[which.min(distances_km),]
   }
   
-  Pop_dens_nerc[[n]] <- pop_dens
-
-
-  #Final Visual Check
-  grid_locs$Density <- pop_dens[,1]
-  #Grid Points
-  p <- ggplot() +
-    geom_map(dat = world, map = world, aes(x=long, y=lat, map_id = region),
-             fill = "#D3D3D3", color = "#000000", size = 0.15) +
-    geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
-             fill = "#D3D3D3", color = "#000000", size = 0.15) +
-    scale_x_continuous(name = " ", limits = c(-125, -66))+
-    scale_y_continuous(name = " ", limits = c(24, 50)) +
-    geom_tile(data = grid_locs, aes(x=Longitude, y = Latitude, 
-                                    fill = Density)) +
-    scale_fill_gradient2(midpoint=median(grid_locs$Density, na.rm = TRUE),
-                         low="blue", mid="white",high="red") +
-    ggtitle("Popluation Density and Temperature Grid Points")
+  #Returning the results
+  return(tx_grids)
   
-  print(p)
+}
+
+
+#-----------------------------------------------------------------------------#
+###Running the function
+cores=detectCores()-4
+registerDoParallel(cores)
+start.time <- Sys.time()
+sub_region_temp_grids <- foreach(m = 1:nerc_regions, .verbose = TRUE) %dopar% {
+  get_temp_grids(Shapefiles = nerc_sf,
+                 Population_Grids = sub_region_pop_grids, 
+                 Temperature_Grids = temp_grids,
+                 Iter = m)
+}
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+print(time.taken)
+stopImplicitCluster()
+
+
+
+
+
+#Plotting the results
+
+for(i in 1:nerc_regions){
+  
+  #Current Sub-Region
+  sub_region <- nerc_sf[i,]
+
+  plot(sub_region, xlim = c(-125, -66),
+      ylim = c(25,50),
+      main = paste0(nerc_labels[i]))
+  points(sub_region_pop_grids[[i]]$Longitude, sub_region_pop_grids[[i]]$Latitude, size =0.01, col='blue')
+  points(sub_region_temp_grids[[i]]$Longitude, sub_region_temp_grids[[i]]$Latitude, size =0.05, col='red', pch = 19)
+  
+
 
 }
 
+
+
+
 #______________________________________________________________________________#
-#Final Plot Check
-grid_locs <- bind_rows(lapply(grid_nerc,data.frame))
-grid_pop <- bind_rows(lapply(Pop_count_nerc,data.frame))
+###Saving the results###
+nerc_pop_temp <- list(Population = sub_region_pop_grids,
+                      Temperature = sub_region_temp_grids)
 
-grid_locs$Pop <- grid_pop[,1]
-ggplot() +
-  geom_map(dat = world, map = world, aes(x=long, y=lat, map_id = region),
-           fill = "#D3D3D3", color = "#000000", size = 0.15) +
-  geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
-           fill = "#D3D3D3", color = "#000000", size = 0.15) +
-  scale_x_continuous(name = " ", limits = c(-125, -66))+
-  scale_y_continuous(name = " ", limits = c(24, 50)) +
-  geom_tile(data = grid_locs, aes(x=Longitude, y = Latitude, 
-                                  fill = Pop)) +
-  scale_fill_gradient2(midpoint=median(grid_locs$Pop, na.rm = TRUE),
-                       low="blue", mid="white",high="red") +
-  ggtitle("Popluation Count and Temperature Grid Points")
-
-
-#------------------------------------------------------------------------------#
-##Final Stage Post Processing
-
-
-#Saving the results -- Population Count
-save(Pop_count_nerc, 
-     file = paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/NERC_Regions_Population_Count.RData"))
-
-
-#Saving the results -- Population Count
-save(Pop_dens_nerc, 
-     file = paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/NERC_Regions_Population_Density.RData"))
+save(nerc_pop_temp, file = paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/NERC_Regions_Temp_Population.RData"))

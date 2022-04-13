@@ -53,7 +53,7 @@ nerc_sf <- readOGR(dsn= paste0("data/sf/NERC_Regions-shp"),
 
 ###MAKE A Selection
 nerc_sf$NERC_Label
-sel_rto <- 8
+sel_rto <- 2
 grid_locs <- grid_nerc[[sel_rto]]
 nerc_cur <- tidy(nerc_sf[sel_rto,])
 nerc_label <- nerc_sf$NERC_Label[sel_rto]
