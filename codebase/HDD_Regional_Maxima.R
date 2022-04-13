@@ -65,7 +65,7 @@ all_grids <- nerc_pop_temp$Temperature
 population <- sub_region_pop_grids  #nerc_pop_temp$Population[[sel_rto]]
 
 thresh_temp <- 291.5 #-----65 Fahrenheit 
-yrs <- 1951:2020
+yrs <- 1951:2021
 block_sizes <- c(6,12,24,72, 168, 336) #hours
 n_regions <- length(nerc_sf$FID)
 nerc_labels <- nerc_sf$NERC_Label
@@ -275,7 +275,7 @@ for(rto in 1:n_regions){
                          low="blue", mid="white",high="red",
                          name = "HDD") +
     ggtitle("Grid Maximum  - Block Size 6 Hours - Code Consistency Check")
-  #print(p1)
+  print(p1)
   
   
   ###Saving 
