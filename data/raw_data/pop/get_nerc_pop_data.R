@@ -55,6 +55,8 @@ print(nc_data)
 #Get the points
 lon <- ncvar_get(nc_data, "longitude")
 lat <- ncvar_get(nc_data, "latitude")
+pop_nc <- ncvar_get(nc_data, "Population Count, v4.11 (2000, 2005, 2010, 2015, 2020): 15 arc-minutes")
+pop_nc <- pop_nc[,,1:5] #2020 Count
 nc_close(nc_data) #Closing the Netcdf file. 
 
 #Make a lat-lon box
@@ -100,14 +102,30 @@ for(n in 1:nerc_regions) {
   grids_rto$LOC <- loc_sub[,1]
   grids_rto <- grids_rto[complete.cases(grids_rto), ]
   
+  #Find the population for each grid
+  grids_rto$LOC <- NULL
+  grids_rto$pop_2020 <- grids_rto$pop_2015 <- grids_rto$pop_2010 <- grids_rto$pop_2005 <- grids_rto$pop_2000 <- NA
+  for(j in 1:nrow(grids_rto)){
+    lon_cur <- which(grids_rto$Longitude[[j]] == lon)
+    lat_cur <- which(grids_rto$Latitude[[j]] == lat)
+    grids_rto[j,3:7] <- pop_nc[lon_cur,lat_cur,]
+  }
+  
   #Plotting the results
-  plot(sub_region, xlim = c(-125, -66),
-       ylim = c(25,50),
-       main = paste0(nerc_labels[n]))
-  points(grids_rto$Longitude, grids_rto$Latitude, size =0.01, col='blue')
+  p1 <- ggplot() +
+    geom_map(dat = world, map = world, aes(x=long, y=lat, map_id = region),
+             fill = "#D3D3D3", color = "#000000", size = 0.15) +
+    geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
+             fill = "#D3D3D3", color = "#000000", size = 0.15) +
+    scale_x_continuous(name = " ", limits = c(-125, -66))+
+    scale_y_continuous(name = " ", limits = c(24, 50)) +
+    geom_polygon(data = sub_region, mapping = aes( x = long, y = lat, group = group), 
+                 fill = NA, color = 'black', size = 1.2) +
+    geom_tile(data = grids_rto, aes(x=Longitude, y = Latitude, fill = pop_2020)) +
+    ggtitle(paste0(nerc_labels[n]))
+  print(p1)
   
   #Save the grid cells within the RTO  
-  grids_rto$LOC <- NULL
   sub_region_pop_grids[[n]] <- grids_rto
   
 }
