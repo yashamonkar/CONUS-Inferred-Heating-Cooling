@@ -43,9 +43,9 @@ source("functions/Get_Day_Difference.R")
 #Load the CONUS Locations
 load("data/NERC_Regions_lat_lon_index_key.RData")
 
-#Load Population Data
-load("data/NERC_Regions_Population_Count.RData")
-load("data/NERC_Regions_Population_Density.RData")
+#Load Population and Temperature Grid Cell Data
+load("data/NERC_Regions_Temp_Population.RData")
+load("data/Population.RData") #Temporary
 
 
 #NERC Shapefiles
@@ -60,8 +60,6 @@ grid_locs <- grid_nerc[[sel_rto]]
 nerc_cur <- tidy(nerc_sf[sel_rto,])
 nerc_label <- nerc_sf$NERC_Label[sel_rto]
 
-#Add the Population Data
-grid_locs$Pop_Wts <- Pop_count_nerc[[sel_rto]][,5]/sum(Pop_count_nerc[[sel_rto]][,5])
 
 
 #______________________________________________________________________________#
@@ -182,8 +180,8 @@ CDD <- nc_data <- t2m_land <- NULL
 #______________________________________________________________________________#
 #______________________________________________________________________________#
 #______________________________________________________________________________#
-###Objective 2:- Site-level Block Maxima. Size - 72 x No Grid Cells x 6
-###Objective 3:- Site-level Block Maxima Date. Size - 72 x No Grid Cells x 6
+###Objective 2:- Site-level Block Maxima. Size - 72 x Num Grid Cells x 6
+###Objective 3:- Site-level Block Maxima Date. Size - 72 x Num Grid Cells x 6
 
 
 ###Output Characteristics
@@ -333,8 +331,6 @@ CONUS_CDD_Site_Level <- list()
 CONUS_CDD_Site_Level[[1]] <- ann_max_values
 CONUS_CDD_Site_Level[[2]] <- ann_max_dates
 
-#save(CONUS_CDD_Site_Level, 
-#     file = paste0("data/processed_data/ERCOT_CDD_Site_Level.RData") )
 
 
 ##Consistency Check 
@@ -405,9 +401,9 @@ ggplot() +
 #______________________________________________________________________________#
 #______________________________________________________________________________#
 #______________________________________________________________________________#
-###Objective 3:- Grid-level Block Maxima. Size - 72 x 6
-###Objective 4:- Grid-level Block Maxima Dates. Size - 72 x 6
-###Objective 5:- Site-level CDD Contribution. Size - 72 x 3285 x 6
+###Objective 4:- Grid-level Block Maxima. Size - 72 x 6
+###Objective 5:- Grid-level Block Maxima Dates. Size - 72 x 6
+###Objective 6:- Site-level CDD Contribution. Size - 72 x 3285 x 6
 
 ###Output Characteristics
 #1. Saved as a .RData file
