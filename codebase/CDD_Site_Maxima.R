@@ -82,7 +82,7 @@ for(rto in 1:n_region){
   #1. Units of (mean) degree-hours/day
 
 
-  #Hyper-Parameters
+  #Storage
   Mean_CDD <- matrix(NA, nrow = length(yrs), ncol = nrow(grid_locs))
 
 
@@ -257,7 +257,7 @@ for(rto in 1:n_region){
 
   nsim <- length(yrs)
 
-  cores=detectCores()
+  cores=detectCores()-4
   registerDoParallel(cores)
   start.time <- Sys.time()
   ynew_results <- foreach(m = 1:nsim, .verbose = TRUE) %dopar% {
@@ -338,7 +338,4 @@ for(rto in 1:n_region){
 
 #______________________________________________________________________________#
 ####Saving the results
-
-
-
 save(NERC_CDD_Site, file = paste0("data/processed_data/CDD_Site_Level.RData"))
