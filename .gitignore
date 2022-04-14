@@ -13,6 +13,9 @@ __pycache__/
 # Text Files
 *.txt
 
+# PDF Files
+*.pdf
+
 # Shape Files
 *.nc
 
