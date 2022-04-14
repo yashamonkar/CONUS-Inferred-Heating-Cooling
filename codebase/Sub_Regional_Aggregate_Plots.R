@@ -52,10 +52,10 @@ us <- map_data("state")
 
 #______________________________________________________________________________#
 ###---Trends Analysis on Values---###
-pdf("Trial.pdf")
+pdf("HDD_Values.pdf")
 
 #Select the Block Size
-j <- 6
+j <- 3
 
 
 #Plotting the results
