@@ -53,7 +53,6 @@ load("data/NERC_Regions_lat_lon_index_key.RData")
 
 #Load Population and Temperature Grid Cell Data
 load("data/NERC_Regions_Temp_Population.RData")
-load("data/Population.RData") #Temporary
 
 
 #NERC Shapefiles
@@ -64,7 +63,7 @@ nerc_sf <- readOGR(dsn= paste0("data/sf/NERC_Regions-shp"),
 #______________________________________________________________________________#
 ###---Global-Hyperparameters---###
 all_grids <- nerc_pop_temp$Temperature
-population <- sub_region_pop_grids  #nerc_pop_temp$Population[[sel_rto]]
+population <- nerc_pop_temp$Population
 
 thresh_temp <- 291.5 #-----65 Fahrenheit 
 yrs <- 1951:2021
@@ -75,7 +74,7 @@ nerc_labels <- nerc_sf$NERC_Label
 
 ###---Select Population Year---### 
 #Based on Column in Population -- 3-2000, 4-2005, 5-2010, 6-2015, 7-2020
-scenario <- 3
+scenario <- 7
 
 
 #______________________________________________________________________________#
@@ -283,7 +282,7 @@ stopImplicitCluster()
 
 #______________________________________________________________________________#
 ##Saving the results
-save(NERC_HDD_Region, file = paste0("data/processed_data/HDD_Regional_2000.RData"))
+save(NERC_HDD_Region, file = paste0("data/processed_data/HDD_Regional_2020.RData"))
 
 
 
