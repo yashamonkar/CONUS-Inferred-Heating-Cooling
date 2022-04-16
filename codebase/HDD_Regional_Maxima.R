@@ -43,6 +43,7 @@ library(foreach)
 #Source functions
 source("functions/Get_Block_Maximum.R")
 source("functions/Get_Day_Difference.R")
+source("~/GitHub/CONUS-Inferred-Heating-Cooling/functions/Get_Conus_Regions.R")
 
 #Plotting the grid points
 world <- map_data("world")
@@ -56,8 +57,11 @@ load("data/NERC_Regions_Temp_Population.RData")
 
 
 #NERC Shapefiles
-nerc_sf <- readOGR(dsn= paste0("data/sf/NERC_Regions-shp"),
-                   layer="NERC_Regions_EIA")
+egrids <- readOGR(dsn= paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/sf/egrid2020_subregions"),
+                  layer="eGRID2020_subregions")
+nerc_sf <- get_egrids(egrids_sf = egrids)
+nerc_labels <- nerc_sf$Labels
+n_regions <- length(nerc_sf$Labels)
 
 
 #______________________________________________________________________________#
@@ -68,8 +72,6 @@ population <- nerc_pop_temp$Population
 thresh_temp <- 291.5 #-----65 Fahrenheit 
 yrs <- 1951:2021
 block_sizes <- c(6,12,24,72, 168, 336) #hours
-n_regions <- length(nerc_sf$FID)
-nerc_labels <- nerc_sf$NERC_Label
 
 
 ###---Select Population Year---### 
@@ -81,7 +83,7 @@ scenario <- 7
 ###----Code to get regional block Maxima----###
 get_hdd_maxima <- function(Population, Temp_grids, 
                            Years, thresh_temp, 
-                           block_sizes, Scenario){
+                           block_sizes, Scenario,rto){
   
   #Library
   library(zoo)
@@ -272,7 +274,8 @@ NERC_HDD_Region <- foreach(rto = 1:n_regions, .verbose = TRUE) %dopar% {
                  Years = yrs,
                  thresh_temp = thresh_temp,
                  block_sizes = block_sizes, 
-                 Scenario=scenario)
+                 Scenario=scenario,
+                 rto=rto)
 }
 end.time <- Sys.time()
 time.taken <- end.time - start.time
@@ -298,7 +301,7 @@ for(i in 1:length(NERC_HDD_Region)){
         cex = 1.15)
   
   #Spatial Plots
-  sub_region <- nerc_sf[i,]
+  sub_region <- nerc_sf$Shapefiles[[i]]
   pt_dt <- NERC_HDD_Region[[i]][[3]][[1]]
   pt_dt <- colMeans(pt_dt)
   

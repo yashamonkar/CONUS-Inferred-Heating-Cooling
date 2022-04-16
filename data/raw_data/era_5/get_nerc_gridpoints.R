@@ -17,12 +17,14 @@ library(sf)
 library(ncdf4) 
 
 #Load the shape-file data 
-nerc_regs <- readOGR("~/GitHub/CONUS-Inferred-Heating-Cooling/data/sf/NERC_Regions-shp/NERC_Regions_EIA.shp")
+egrids <- readOGR("~/GitHub/CONUS-Inferred-Heating-Cooling/data/sf/egrid2020_subregions/eGRID2020_subregions.shp")
 
-#Plotting the data
-plot(nerc_regs, xlim = c(-125, -66),
-     ylim = c(25,50),
-     main = "NERC Regions")
+
+#______________________________________________________________________________#
+###---Get Conus Regions---###
+source("~/GitHub/CONUS-Inferred-Heating-Cooling/functions/Get_Conus_Regions.R")
+nerc_regs <- get_egrids(egrids_sf = egrids)
+
 
 #______________________________________________________________________________#
 ###ERA-5 Gridbox
@@ -45,13 +47,13 @@ grids <- data.frame(Longitude = rep(lon, length(lat)),
 #______________________________________________________________________________#
 ###ERA-5 Gridbox
 
-n_regions <- length(nerc_regs$FID)
+n_regions <- length(nerc_regs$Labels)
 grids_usa <- list()
 
 for(i in 1:n_regions){
         
         #Current Region
-        states <- nerc_regs[i,]
+        states <- nerc_regs$Shapefiles[[i]]
         
         #Convert the grids to a spatial dataset
         dat <- grids
@@ -79,7 +81,7 @@ for(i in 1:n_regions){
 
 #______________________________________________________________________________#
 ###Plot_Check
-plot(nerc_regs, xlim = c(-125, -66),
+plot(egrids, xlim = c(-125, -66),
      ylim = c(25,50),
      main = "NERC Regions")
 for(i in 1:n_regions){

@@ -41,6 +41,8 @@ library(rgdal)
 #Source functions
 source("functions/Get_Block_Maximum.R")
 source("functions/Get_Day_Difference.R")
+source("~/GitHub/CONUS-Inferred-Heating-Cooling/functions/Get_Conus_Regions.R")
+
 
 #Plotting the grid points
 world <- map_data("world")
@@ -54,8 +56,12 @@ load("data/NERC_Regions_Temp_Population.RData")
 
 
 #NERC Shapefiles
-nerc_sf <- readOGR(dsn= paste0("data/sf/NERC_Regions-shp"),
-                   layer="NERC_Regions_EIA")
+egrids <- readOGR(dsn= paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/sf/egrid2020_subregions"),
+                  layer="eGRID2020_subregions")
+nerc_sf <- get_egrids(egrids_sf = egrids)
+nerc_labels <- nerc_sf$Labels
+n_regions <- length(nerc_sf$Labels)
+
 
 
 #______________________________________________________________________________#
@@ -66,8 +72,7 @@ population <- nerc_pop_temp$Population
 thresh_temp <- 291.5 #-----65 Fahrenheit 
 yrs <- 1950:2021
 block_sizes <- c(6,12,24,72, 168, 336) #hours
-n_regions <- length(nerc_sf$FID)
-nerc_labels <- nerc_sf$NERC_Label
+
 
 
 ###---Select Population Year---### 
@@ -216,7 +221,7 @@ for(rto in 1:n_regions){
         cex = 1.15)
   
   #Spatial Plots
-  sub_region <- nerc_sf[rto,]
+  sub_region <- nerc_sf$Shapefiles[[rto]]
   pt_dt <- CDD_Regional[[3]][[1]]
   pt_dt <- colMeans(pt_dt)
   
@@ -235,7 +240,7 @@ for(rto in 1:n_regions){
                          low="blue", mid="white",high="red",
                          name = "CDD") +
     ggtitle("Grid Maximum  - Block Size 6 Hours - Code Consistency Check")
-  #print(p1)
+  print(p1)
   
   
   ###Saving 

@@ -32,16 +32,21 @@ library(geosphere)
 library(doParallel)
 library(foreach)
 
+#Functions
+source("~/GitHub/CONUS-Inferred-Heating-Cooling/functions/Get_Conus_Regions.R")
+
+
 #Plotting the grid points
 world <- map_data("world")
 us <- map_data("state")
 
 
 #NERC Shapefiles
-nerc_sf <- readOGR(dsn= paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/sf/NERC_Regions-shp"),
-                   layer="NERC_Regions_EIA")
-nerc_labels <- nerc_sf$NERC_Label
-nerc_regions <- length(nerc_sf$FID)
+egrids <- readOGR(dsn= paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/sf/egrid2020_subregions"),
+                   layer="eGRID2020_subregions")
+nerc_sf <- get_egrids(egrids_sf = egrids)
+nerc_labels <- nerc_sf$Labels
+nerc_regions <- length(nerc_sf$Labels)
 
 
 #------------------------------------------------------------------------------#
@@ -66,18 +71,18 @@ all_grids <- data.frame(Longitude = rep(lon, length(lat)),
 
 #Plot the results to just check
 #Grid Points
-ggplot() +
-  geom_map(dat = world, map = world, aes(x=long, y=lat, map_id = region),
-           fill = "#D3D3D3", color = "#000000", size = 0.15) +
-  geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
-           fill = "#D3D3D3", color = "#000000", size = 0.15) +
-  scale_x_continuous(name = " ", limits = c(-125, -66))+
-  scale_y_continuous(name = " ", limits = c(24, 50)) +
-  geom_polygon(data = nerc_sf, mapping = aes( x = long, y = lat, group = group), 
-               fill = NA, color = 'black', size = 1.2) +
-  geom_point(data = all_grids, aes(x=Longitude, y = Latitude), 
-             color = 'blue', size = 0.5) +
-  ggtitle("Popluation and Temperature Grid Points - Visual Check")
+#ggplot() +
+#  geom_map(dat = world, map = world, aes(x=long, y=lat, map_id = region),
+#           fill = "#D3D3D3", color = "#000000", size = 0.15) +
+#  geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
+#           fill = "#D3D3D3", color = "#000000", size = 0.15) +
+#  scale_x_continuous(name = " ", limits = c(-125, -66))+
+#  scale_y_continuous(name = " ", limits = c(24, 50)) +
+#  geom_polygon(data = egrids, mapping = aes( x = long, y = lat, group = group), 
+#               fill = NA, color = 'black', size = 1.2) +
+#  geom_point(data = all_grids, aes(x=Longitude, y = Latitude), 
+#             color = 'blue', size = 0.5) +
+#  ggtitle("Popluation and Temperature Grid Points - Visual Check")
 
 
 
@@ -85,16 +90,18 @@ ggplot() +
 ###Find all Grid Cells (Population Data) within each shapefile###
 sub_region_pop_grids <- list()
 
-#Convert the grids to a spatial dataset
-dat <- all_grids
-coordinates(dat) <- ~ Longitude + Latitude # Assignment modified according
-proj4string(dat) <- proj4string(nerc_sf) # Set the projection of the SpatialPointsDataFrame
 
 
 for(n in 1:nerc_regions) {
   
   #Current Sub-Region
-  sub_region <- nerc_sf[n,]
+  sub_region <- nerc_sf$Shapefiles[[n]]
+  
+  #Convert the grids to a spatial dataset
+  dat <- all_grids
+  coordinates(dat) <- ~ Longitude + Latitude # Assignment modified according
+  proj4string(dat) <- proj4string(sub_region) # Set the projection of the SpatialPointsDataFrame
+  
   
   #Find the locations inside the United States
   loc_sub <- over(dat,sub_region)
@@ -169,7 +176,7 @@ get_temp_grids <- function(Shapefiles, Population_Grids, Temperature_Grids,Iter)
   library(geosphere)
   
   #Current Sub-Region
-  sub_region <- Shapefiles[Iter,]
+  sub_region <- Shapefiles[[Iter]]
   
   #Get the current population Grids
   pop_grids <- Population_Grids[[Iter]]
@@ -203,11 +210,11 @@ get_temp_grids <- function(Shapefiles, Population_Grids, Temperature_Grids,Iter)
 
 #-----------------------------------------------------------------------------#
 ###Running the function
-cores=detectCores()-4
+cores=detectCores()-2
 registerDoParallel(cores)
 start.time <- Sys.time()
 sub_region_temp_grids <- foreach(m = 1:nerc_regions, .verbose = TRUE) %dopar% {
-  get_temp_grids(Shapefiles = nerc_sf,
+  get_temp_grids(Shapefiles = nerc_sf$Shapefiles,
                  Population_Grids = sub_region_pop_grids, 
                  Temperature_Grids = temp_grids,
                  Iter = m)
@@ -218,15 +225,20 @@ print(time.taken)
 stopImplicitCluster()
 
 
+#______________________________________________________________________________#
+###Saving the results###
+nerc_pop_temp <- list(Population = sub_region_pop_grids,
+                      Temperature = sub_region_temp_grids)
+
+save(nerc_pop_temp, file = paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/NERC_Regions_Temp_Population.RData"))
 
 
 
 #Plotting the results
-
 for(i in 1:nerc_regions){
   
   #Current Sub-Region
-  sub_region <- nerc_sf[i,]
+  sub_region <- nerc_sf$Shapefiles[[i]]
 
   plot(sub_region, xlim = c(-125, -66),
       ylim = c(25,50),
@@ -241,9 +253,3 @@ for(i in 1:nerc_regions){
 
 
 
-#______________________________________________________________________________#
-###Saving the results###
-nerc_pop_temp <- list(Population = sub_region_pop_grids,
-                      Temperature = sub_region_temp_grids)
-
-save(nerc_pop_temp, file = paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/NERC_Regions_Temp_Population.RData"))
