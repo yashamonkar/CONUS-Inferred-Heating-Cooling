@@ -25,7 +25,7 @@ source("functions/Get_Day_Difference.R")
 source("~/GitHub/CONUS-Inferred-Heating-Cooling/functions/Get_Conus_Regions.R")
 
 #Load Population and Temperature Grid Cell Data
-DD_Regional <- get(load("data/processed_data/HDD_Regional_2020.RData"))
+DD_Regional <- get(load("data/processed_data/CDD_Regional_2020.RData"))
 
 
 
@@ -40,11 +40,11 @@ n_regions <- length(nerc_sf$Labels)
 
 #______________________________________________________________________________#
 ###Hyper-Parameters###
-Data_Type <- "HDD"
+Data_Type <- "CDD"
 
 
 
-yrs <- 1951:2021
+yrs <- 1950:2021
 block_sizes <- c(6,12,24,72, 168, 336) #hours
 
 
@@ -55,7 +55,8 @@ us <- map_data("state")
 
 #______________________________________________________________________________#
 ###---Trends Analysis on Values---###
-pdf("HDD_Values.pdf")
+pdf("CDD_Values.pdf")
+
 
 
 #Select the Block Size
@@ -66,12 +67,8 @@ j <- 6
 p <- ggplot() +
   geom_map(dat = world, map = world, aes(x=long, y=lat, map_id = region),
            fill = "#D3D3D3", color = "#000000", size = 0.15) +
-  geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
-           fill = "#D3D3D3", color = "#000000", size = 0.15) +
   scale_x_continuous(name = " ", limits = c(-125, -60))+
   scale_y_continuous(name = " ", limits = c(20, 55)) +
-  geom_polygon(data = egrids, mapping = aes(x = long, y = lat, group = group), 
-               fill = NA, color = 'black', size = 1.33) +
   ggtitle(paste0("Peak per-capita Inferred ",Data_Type,
                  " Demand \n Block Size - ", block_sizes[j] ," Hours"))
 
@@ -117,7 +114,7 @@ for(i in 1:n_regions){
     data = sub_region, 
     mapping = aes(x = long, y = lat, group = group), 
     fill            = fill_col, 
-    colour          = 'black', 
+    colour          = 'black',
     pattern_spacing = 0.05, 
     pattern_density = sig[[i]], 
     pattern_fill    = 'black', 
@@ -126,8 +123,19 @@ for(i in 1:n_regions){
   
 }
 
+#Add state boundaries
+p <- p + 
+  geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
+           fill = NA, color = "#964B00", size = 0.15) +
+  geom_polygon(data = egrids, mapping = aes(x = long, y = lat, group = group), 
+               fill = NA, color = 'black', size = 1.33)
+
 print(p)
 
+
+
+
+dev.off()
 
 
 
