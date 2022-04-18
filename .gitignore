@@ -19,6 +19,9 @@ __pycache__/
 # Shape Files
 *.nc
 
+# exclude Shapefiles -- for the moment
+data/sf/*
+
 # Compressed Files
 *.zip
 
