@@ -76,7 +76,7 @@ block_sizes <- c(6,12,24,72, 168, 336) #hours
 
 ###---Select Population Year---### 
 #Based on Column in Population -- 3-2000, 4-2005, 5-2010, 6-2015, 7-2020
-scenario <- 7
+scenario <- 6
 
 
 #______________________________________________________________________________#
@@ -285,7 +285,7 @@ stopImplicitCluster()
 
 #______________________________________________________________________________#
 ##Saving the results
-save(NERC_HDD_Region, file = paste0("data/processed_data/HDD_Regional_2020.RData"))
+save(NERC_HDD_Region, file = paste0("data/processed_data/HDD_Regional_2015.RData"))
 
 
 

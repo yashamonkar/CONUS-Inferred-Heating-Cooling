@@ -18,10 +18,11 @@ library(maps)
 library(dplyr)
 library(trend)
 library(rgdal)
+library(ggpattern)
 
 #Load Functions
 source("functions/Get_Day_Difference.R")
-
+source("~/GitHub/CONUS-Inferred-Heating-Cooling/functions/Get_Conus_Regions.R")
 
 #Load Population and Temperature Grid Cell Data
 DD_Regional <- get(load("data/processed_data/HDD_Regional_2020.RData"))
@@ -29,8 +30,11 @@ DD_Regional <- get(load("data/processed_data/HDD_Regional_2020.RData"))
 
 
 #NERC Shapefiles
-nerc_sf <- readOGR(dsn= paste0("data/sf/NERC_Regions-shp"),
-                   layer="NERC_Regions_EIA")
+egrids <- readOGR(dsn= paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/sf/egrid2020_subregions"),
+                  layer="eGRID2020_subregions")
+nerc_sf <- get_egrids(egrids_sf = egrids)
+nerc_labels <- nerc_sf$Labels
+n_regions <- length(nerc_sf$Labels)
 
 
 
@@ -38,10 +42,9 @@ nerc_sf <- readOGR(dsn= paste0("data/sf/NERC_Regions-shp"),
 ###Hyper-Parameters###
 Data_Type <- "HDD"
 
-n_regions <- length(nerc_sf$FID)
-nerc_labels <- nerc_sf$NERC_Label
 
-yrs <- 1950:2021
+
+yrs <- 1951:2021
 block_sizes <- c(6,12,24,72, 168, 336) #hours
 
 
@@ -54,8 +57,9 @@ us <- map_data("state")
 ###---Trends Analysis on Values---###
 pdf("HDD_Values.pdf")
 
+
 #Select the Block Size
-j <- 3
+j <- 6
 
 
 #Plotting the results
@@ -66,7 +70,7 @@ p <- ggplot() +
            fill = "#D3D3D3", color = "#000000", size = 0.15) +
   scale_x_continuous(name = " ", limits = c(-125, -60))+
   scale_y_continuous(name = " ", limits = c(20, 55)) +
-  geom_polygon(data = nerc_sf, mapping = aes(x = long, y = lat, group = group), 
+  geom_polygon(data = egrids, mapping = aes(x = long, y = lat, group = group), 
                fill = NA, color = 'black', size = 1.33) +
   ggtitle(paste0("Peak per-capita Inferred ",Data_Type,
                  " Demand \n Block Size - ", block_sizes[j] ," Hours"))
@@ -102,7 +106,7 @@ for(i in 1:n_regions){
    
   
   #Subset to RTO
-  sub_region <- nerc_sf[i,]
+  sub_region <- nerc_sf$Shapefiles[[i]]
   
   #Add color to the sub-region
   #p <- p +
@@ -189,7 +193,7 @@ for(i in 1:n_regions){
   
   
   #Subset to RTO
-  sub_region <- nerc_sf[i,]
+  sub_region <- nerc_sf$Shapefiles[[i]]
   
   #Add color to the sub-region
   #p <- p +
