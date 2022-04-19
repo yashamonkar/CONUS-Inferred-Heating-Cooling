@@ -20,6 +20,7 @@ library(trend)
 library(rgdal)
 library(ggpattern)
 library(gridExtra)
+library(zoo)
 
 #Load Functions
 source("functions/Get_Day_Difference.R")
@@ -37,7 +38,7 @@ n_regions <- length(nerc_sf$Labels)
 pop_regions <- readOGR(dsn= paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/sf/USA_Urban_Areas"),
                   layer="USA_Urban_Areas")
 
-
+pdf("my_plot.pdf", height=1850/300, width=5000/300)
 
 #______________________________________________________________________________#
 ###Hyper-Parameters###
@@ -74,9 +75,9 @@ p1 <-  ggplot() +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = "#D3D3D3", color = "#000000", size = 0.15) +
   geom_polygon(data = sub_region, mapping = aes( x = long, y = lat, group = group), 
-               fill = "#FFFFFF", color = 'black', size = 1.2) + 
+               fill = "#FFFFFF", color = 'black', size = 1) + 
   geom_polygon(data = pop_regions, mapping = aes( x = long, y = lat, group = group), 
-               fill = "red", color = "red", alpha = 0.75) +
+               fill = "black", color = NA, alpha = 0.2) +
   scale_x_continuous(name = " ", limits = c(lon_min, lon_max)) +
   scale_y_continuous(name = " ", limits = c(lat_min, lat_max)) +
   ggtitle(paste0(RTO_Label)) +
@@ -89,7 +90,7 @@ p1 <-  ggplot() +
 
 
 #______________________________________________________________________________#
-###----Plot One: Map of the Aggregated CDD-----###
+###----Plot Two: Map of the Aggregated CDD-----###
 
 #Load Population and Temperature Grid Cell Data
 CDD_Regional <- get(load("data/processed_data/CDD_Regional_2020.RData"))
@@ -115,7 +116,7 @@ p2 <-  ggplot(Plt_Dt) +
 
 
 #______________________________________________________________________________#
-###----Plot One: Map of the Aggregated HDD-----###
+###----Plot Three: Map of the Aggregated HDD-----###
 
 #Load Population and Temperature Grid Cell Data
 HDD_Regional <- get(load("data/processed_data/HDD_Regional_2020.RData"))
@@ -129,8 +130,41 @@ Plt_Dt <- data.frame(Years = 1951:2021,
 
 p3 <-  ggplot(Plt_Dt) +
   geom_line(mapping = aes(x=Years, y = HDD)) +
-  geom_line(aes(x= Years, y=rollmean(HDD, 10, na.pad=TRUE)), color = 'red', size = 1.33) +
+  geom_line(aes(x= Years, y=rollmean(HDD, 10, na.pad=TRUE)), color = 'blue', size = 1.33) +
   ggtitle(paste0("Peak Inferred HDD")) +
+  ylab("Hourly Per-capita degree hours") +
+  theme_bw() +
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=12),
+        plot.title = element_text(size=20))
+
+
+#______________________________________________________________________________#
+###----Plot Four: Map of the Aggregated HDD and CDD-----###
+
+#Load Population and Temperature Grid Cell Data
+HDD_Regional <- get(load("data/processed_data/HDD_Regional_2020.RData"))
+hdd_agg <- HDD_Regional[[sel_rto]][[1]][[sel_block]]/block_sizes[sel_block]
+
+
+#Plotting Dataset
+Plt_Dt_HDD <- data.frame(Years = 1951:2021,
+                         HDD = hdd_agg)
+
+Plt_Dt_CDD <- data.frame(Years = 1950:2021,
+                         CDD = cdd_agg)
+
+
+p4 <-  ggplot() +
+  geom_line(Plt_Dt_HDD, mapping = aes(x=Years, y = HDD), col ='blue') +
+  geom_line(Plt_Dt_HDD, mapping = aes(x= Years, 
+                                  y=rollmean(HDD, 10, na.pad=TRUE)), 
+            color = 'blue', size = 1.33) +
+  geom_line(Plt_Dt_CDD, mapping = aes(x=Years, y = CDD), col='red') +
+  geom_line(Plt_Dt_CDD, mapping = aes(x= Years, 
+                                  y=rollmean(CDD, 10, na.pad=TRUE)), 
+            color = 'red', size = 1.33) +
+  ggtitle(paste0("Peak Inferred Data")) +
   ylab("Hourly Per-capita degree hours") +
   theme_bw() +
   theme(axis.text=element_text(size=10),
@@ -214,11 +248,11 @@ group.colors <- c(Summer = "#FF0000", Winter = "#0000FF")
 
 
 
-p4 <- ggplot(data=df,aes(x=DOY,y=Dens,fill=Season))+
+p5 <- ggplot(data=df,aes(x=DOY,y=Dens,fill=Season))+
   geom_bar(stat="identity") +
   geom_point(data = Ann_Max, aes(x=DOY, y =  1.05*max(df$Dens), color = Season)) +
-  geom_point(df, mapping = aes(x = 291, y = 1.05*max(Dens)),
-             size =4, shape = 8) +
+  #geom_point(df, mapping = aes(x = 291, y = 1.05*max(Dens)),
+  #           size =4, shape = 8) +
   scale_x_continuous(name = "", breaks=mon_breaks, labels = mon_labels, 
                      limits = c(1, 365)) +
   annotate("text", x=140, y=0.5*max(df$Dens), 
@@ -246,4 +280,9 @@ p4 <- ggplot(data=df,aes(x=DOY,y=Dens,fill=Season))+
 
 #______________________________________________________________________________#
 
-grid.arrange(p1,p2,p3,p4, nrow = 2)
+#grid.arrange(p1,p2,p3,p5, nrow = 2)
+
+grid.arrange(p1,p4,p5, nrow = 1)
+
+
+dev.off()
