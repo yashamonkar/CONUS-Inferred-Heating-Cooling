@@ -25,8 +25,10 @@ source("functions/Get_Day_Difference.R")
 source("~/GitHub/CONUS-Inferred-Heating-Cooling/functions/Get_Conus_Regions.R")
 
 #Load Population and Temperature Grid Cell Data
-DD_Regional <- get(load("data/processed_data/CDD_Regional_2020.RData"))
+DD_Regional <- get(load("data/processed_data/HDD_Regional_2020.RData"))
 
+#Load the Grid Cells Data
+load("data/NERC_Regions_lat_lon_index_key.RData")
 
 
 #NERC Shapefiles
@@ -40,11 +42,11 @@ n_regions <- length(nerc_sf$Labels)
 
 #______________________________________________________________________________#
 ###Hyper-Parameters###
-Data_Type <- "CDD"
+Data_Type <- "HDD"
 
 
 
-yrs <- 1950:2021
+yrs <- 1951:2021
 block_sizes <- c(6,12,24,72, 168, 336) #hours
 
 
@@ -55,7 +57,7 @@ us <- map_data("state")
 
 #______________________________________________________________________________#
 ###---Trends Analysis on Values---###
-pdf("CDD_Values.pdf")
+pdf("figures/HDD_Values.pdf")
 
 
 
@@ -86,7 +88,7 @@ for(i in 1:n_regions){
   
   #Significance
   if(ts_ss$p.value < 0.05) {
-    sig[[i]] = 0.1}
+    sig[[i]] = 1}
   
   #Sens_Slop
   p_col <- ts_ss$estimates*length(ts_agg)/mean(ts_agg)
@@ -106,20 +108,26 @@ for(i in 1:n_regions){
   sub_region <- nerc_sf$Shapefiles[[i]]
   
   #Add color to the sub-region
-  #p <- p +
-  #  geom_polygon(data = sub_region, mapping = aes(x = long, y = lat, group = group), 
-  #               fill = p_col[[i]], color = 'black', size = 1.2, pattern_fill = 'black')
+  p <- p +
+    geom_polygon(data = sub_region, mapping = aes(x = long, y = lat, group = group), 
+                 fill = fill_col, color = NA)
   
-  p <- p +  geom_polygon_pattern(
-    data = sub_region, 
-    mapping = aes(x = long, y = lat, group = group), 
-    fill            = fill_col, 
-    colour          = 'black',
-    pattern_spacing = 0.05, 
-    pattern_density = sig[[i]], 
-    pattern_fill    = 'black', 
-    pattern_colour  = '#002366',
-    pattern_angle   = 45) 
+  #Add points for significance
+  if(sig[[i]] == 1) {
+    plt_grids <- grid_nerc[[i]]
+    p <- p + geom_point(data = plt_grids, mapping = aes(x = Longitude, y = Latitude), size = 0.05)
+  }
+  
+  #p <- p +  geom_polygon_pattern(
+  #  data = sub_region, 
+  #  mapping = aes(x = long, y = lat, group = group), 
+  #  fill            = fill_col, 
+  #  colour          = 'black',
+  #  pattern_spacing = 0.05, 
+  #  pattern_density = sig[[i]], 
+  #  pattern_fill    = 'black', 
+  #  pattern_colour  = '#002366',
+  #  pattern_angle   = 45) 
   
 }
 
@@ -128,10 +136,9 @@ p <- p +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "#964B00", size = 0.15) +
   geom_polygon(data = egrids, mapping = aes(x = long, y = lat, group = group), 
-               fill = NA, color = 'black', size = 1.33)
+               fill = NA, color = 'black')
 
 print(p)
-
 
 
 
@@ -139,12 +146,20 @@ dev.off()
 
 
 
+
+
+
+
+
+
+
+
 #______________________________________________________________________________#
 ###---Trends Analysis on Dates---###
-pdf("HDD_Dates.pdf")
+pdf("figures/HDD_Dates.pdf")
 
 #Select the Block Size
-j <- 6
+j <- 3
 
 
 #Plotting the results
@@ -184,7 +199,7 @@ for(i in 1:n_regions){
   
   #Significance
   if(ts_ss$p.value < 0.05) {
-    sig[[i]] = 0.1}
+    sig[[i]] = 1}
   
   #Sens_Slop
   p_col <- ts_ss$estimates*length(ts_agg)/mean(ts_agg)
@@ -204,22 +219,24 @@ for(i in 1:n_regions){
   sub_region <- nerc_sf$Shapefiles[[i]]
   
   #Add color to the sub-region
-  #p <- p +
-  #  geom_polygon(data = sub_region, mapping = aes(x = long, y = lat, group = group), 
-  #               fill = p_col[[i]], color = 'black', size = 1.2, pattern_fill = 'black')
+  p <- p +
+    geom_polygon(data = sub_region, mapping = aes(x = long, y = lat, group = group), 
+                 fill = fill_col, color = NA)
   
-  p <- p +  geom_polygon_pattern(
-    data = sub_region, 
-    mapping = aes(x = long, y = lat, group = group), 
-    fill            = fill_col, 
-    colour          = 'black', 
-    pattern_spacing = 0.05, 
-    pattern_density = sig[[i]], 
-    pattern_fill    = 'black', 
-    pattern_colour  = '#002366',
-    pattern_angle   = 45) 
+  #Add points for significance
+  if(sig[[i]] == 1) {
+    plt_grids <- grid_nerc[[i]]
+    p <- p + geom_point(data = plt_grids, mapping = aes(x = Longitude, y = Latitude), size = 0.05)
+  }
   
 }
+
+#Add state boundaries
+p <- p + 
+  geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
+           fill = NA, color = "#964B00", size = 0.15) +
+  geom_polygon(data = egrids, mapping = aes(x = long, y = lat, group = group), 
+               fill = NA, color = 'black')
 
 print(p)
 
