@@ -325,7 +325,7 @@ get_hdd <- function(yr, block_size, Grids, thresh_temp){
 
 nsim <- length(yrs)
 
-cores=detectCores()-2
+cores=detectCores()-4
 registerDoParallel(cores)
 start.time <- Sys.time()
 ynew_results <- foreach(m = 1:nsim, .verbose = TRUE) %dopar% {

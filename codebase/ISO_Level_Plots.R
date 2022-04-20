@@ -30,20 +30,31 @@ source("~/GitHub/CONUS-Inferred-Heating-Cooling/functions/Get_Conus_Regions.R")
 #NERC Shapefiles
 egrids <- readOGR(dsn= paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/sf/egrid2020_subregions"),
                   layer="eGRID2020_subregions")
-nerc_sf <- get_egrids(egrids_sf = egrids)
+nerc_sf <- get_egrids(egrids_sf = egrids) #Convert to needed regions
 nerc_labels <- nerc_sf$Labels
 n_regions <- length(nerc_sf$Labels)
+
+nerc_labels <- c("Arizona/New Mexico", "CAISO", "ERCOT", "Florida", 
+                "Wisconsin (Rural)", "Midwest (MISO)", "ISO New England", 
+                "Northwest", "NYISO", "PJM (East)", "Michigan", "PJM (West)", 
+                "Colorado", "Kansas", "Oklahoma", "Arkansas/Louisiana" , 
+                "Missouri" ,"Southeast", "Tennesse Valley", "Carolinas")
 
 #Population Shape-Files
 pop_regions <- readOGR(dsn= paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data/sf/USA_Urban_Areas"),
                   layer="USA_Urban_Areas")
 
-pdf("my_plot.pdf", height=1850/300, width=5000/300)
+
+pdf("figures/ISO_Plots.pdf", height=1850/300, width=5000/300)
 
 #______________________________________________________________________________#
 ###Hyper-Parameters###
-sel_rto <- 9
-RTO_Label <- "NYISO"
+for(jk in 1:n_regions){
+  
+  print(jk)
+
+sel_rto <- jk
+RTO_Label <- nerc_labels[sel_rto]
 sel_block <- 4
 
 block_sizes <- c(6,12,24,72, 168, 336) #hours
@@ -73,11 +84,13 @@ p1 <-  ggplot() +
   geom_map(dat = world, map = world, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "#000000", size = 0.15) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
-           fill = "#D3D3D3", color = "#000000", size = 0.15) +
+           fill = "#D3D3D3", color = NA) +
   geom_polygon(data = sub_region, mapping = aes( x = long, y = lat, group = group), 
                fill = "#FFFFFF", color = 'black', size = 1) + 
   geom_polygon(data = pop_regions, mapping = aes( x = long, y = lat, group = group), 
                fill = "black", color = NA, alpha = 0.2) +
+  geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
+           fill = NA, color = "#000000", size = 0.15) +
   scale_x_continuous(name = " ", limits = c(lon_min, lon_max)) +
   scale_y_continuous(name = " ", limits = c(lat_min, lat_max)) +
   ggtitle(paste0(RTO_Label)) +
@@ -96,6 +109,7 @@ p1 <-  ggplot() +
 CDD_Regional <- get(load("data/processed_data/CDD_Regional_2020.RData"))
 cdd_agg <- CDD_Regional[[sel_rto]][[1]][[sel_block]]/block_sizes[sel_block]
 
+if(jk == 5){cdd_agg = cdd_agg[-65]}  #Temporary
 
 #Plotting Dataset
 Plt_Dt <- data.frame(Years = 1950:2021,
@@ -283,6 +297,8 @@ p5 <- ggplot(data=df,aes(x=DOY,y=Dens,fill=Season))+
 #grid.arrange(p1,p2,p3,p5, nrow = 2)
 
 grid.arrange(p1,p4,p5, nrow = 1)
+
+}
 
 
 dev.off()
