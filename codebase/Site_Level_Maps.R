@@ -222,6 +222,9 @@ legend_b <- get_legend(
     theme(legend.position = "bottom")
 )
 
+#Save the Legend
+save(legend_b, file = "simulations/Legend.RData")
+
 # add the legend to the row we made earlier. Give it one-third of 
 # the width of one plot (via rel_widths).
 #plot_grid(p_total, legend, rel_widths = c(1, .2))
