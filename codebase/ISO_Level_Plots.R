@@ -107,7 +107,7 @@ p1 <-  ggplot() +
 
 #Load Population and Temperature Grid Cell Data
 CDD_Regional <- get(load("data/processed_data/CDD_Regional_2020.RData"))
-cdd_agg <- CDD_Regional[[sel_rto]][[1]][[sel_block]]/block_sizes[sel_block]
+cdd_agg <- CDD_Regional[[sel_rto]][[1]][[sel_block]]/24
 
 if(jk == 5){cdd_agg = cdd_agg[-65]}  #Temporary
 
@@ -119,9 +119,8 @@ Plt_Dt <- data.frame(Years = 1950:2021,
 p2 <-  ggplot(Plt_Dt) +
   geom_line(mapping = aes(x=Years, y = CDD)) +
   geom_line(aes(x= Years, y=rollmean(CDD, 10, na.pad=TRUE)), color = 'red', size = 1.33) +
-  ggtitle(paste0("Peak Inferred CDD")) +
-  xlab("Year") +
-  ylab("Hourly Per-capita degree hours") +
+  ggtitle(paste0("Peak Inferred Degree Days")) +
+  ylab("Population Adjusted Degree Days") +
   theme_bw() +
   theme(axis.text=element_text(size=10),
         axis.title=element_text(size=12),
@@ -134,7 +133,7 @@ p2 <-  ggplot(Plt_Dt) +
 
 #Load Population and Temperature Grid Cell Data
 HDD_Regional <- get(load("data/processed_data/HDD_Regional_2020.RData"))
-hdd_agg <- HDD_Regional[[sel_rto]][[1]][[sel_block]]/block_sizes[sel_block]
+hdd_agg <- HDD_Regional[[sel_rto]][[1]][[sel_block]]/24
 
 
 #Plotting Dataset
@@ -145,8 +144,8 @@ Plt_Dt <- data.frame(Years = 1951:2021,
 p3 <-  ggplot(Plt_Dt) +
   geom_line(mapping = aes(x=Years, y = HDD)) +
   geom_line(aes(x= Years, y=rollmean(HDD, 10, na.pad=TRUE)), color = 'blue', size = 1.33) +
-  ggtitle(paste0("Peak Inferred HDD")) +
-  ylab("Hourly Per-capita degree hours") +
+  ggtitle(paste0("Peak Inferred Degree Days")) +
+  ylab("Population Adjusted Degree Days") +
   theme_bw() +
   theme(axis.text=element_text(size=10),
         axis.title=element_text(size=12),
@@ -158,7 +157,7 @@ p3 <-  ggplot(Plt_Dt) +
 
 #Load Population and Temperature Grid Cell Data
 HDD_Regional <- get(load("data/processed_data/HDD_Regional_2020.RData"))
-hdd_agg <- HDD_Regional[[sel_rto]][[1]][[sel_block]]/block_sizes[sel_block]
+hdd_agg <- HDD_Regional[[sel_rto]][[1]][[sel_block]]/24
 
 
 #Plotting Dataset
@@ -178,8 +177,8 @@ p4 <-  ggplot() +
   geom_line(Plt_Dt_CDD, mapping = aes(x= Years, 
                                   y=rollmean(CDD, 10, na.pad=TRUE)), 
             color = 'red', size = 1.33) +
-  ggtitle(paste0("Peak Inferred Data")) +
-  ylab("Hourly Per-capita degree hours") +
+  ggtitle(paste0("Peak Inferred Degree Days")) +
+  ylab("Population Adjusted Degree Days") +
   theme_bw() +
   theme(axis.text=element_text(size=10),
         axis.title=element_text(size=12),
@@ -277,6 +276,7 @@ p5 <- ggplot(data=df,aes(x=DOY,y=Dens,fill=Season))+
   scale_color_manual(values=group.colors)+
   coord_polar() +
   labs(title = "Peak Event Occurrences") +
+  theme_bw() +
   theme(plot.title = element_text(size=20),
         plot.subtitle = element_text(size=15),
         legend.text = element_text(size=15),
