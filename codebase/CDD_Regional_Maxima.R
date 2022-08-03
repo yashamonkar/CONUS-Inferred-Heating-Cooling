@@ -77,7 +77,7 @@ block_sizes <- c(6,12,24,72, 168, 336) #hours
 
 ###---Select Population Year---### 
 #Based on Column in Population -- 3-2000, 4-2005, 5-2010, 6-2015, 7-2020
-scenario <- 6
+scenario <- 7
 
 
 #______________________________________________________________________________#
@@ -94,7 +94,8 @@ for(rto in 1:n_regions){
   grid_locs <- all_grids[[rto]]
   
   #Set-up Storage
-  CDD_Grid_Values <- CDD_Dates <- CDD_Site_Values <- list()
+  CDD_Grid_Values <- CDD_Dates <- list()
+  CDD_Mean <- list()
   
   pb = txtProgressBar(min = 1, max = length(yrs), initial = 1) 
   for(y in 1:length(yrs)){
@@ -165,24 +166,18 @@ for(rto in 1:n_regions){
       max_dates[[k]] <- df$Dates[max_index]
       max_val[[k]] <- df$Block[max_index]
       
-      #Get the Site values
-      #max_site_vals[[k]] <- CDD[max_index,] #Just the middle hour
-      low_index <- max_index - cur_block*0.5 + 1
-      upper_index <- max_index + cur_block*0.5
-      temp_sites <- CDD[low_index:upper_index,]
-      max_site_vals[[k]] <- colSums(temp_sites)
-      
     }
     CDD <- NULL
     
+    CDD_Mean[[y]] <- mean(CDD_Agg)
     CDD_Grid_Values[[y]] <- max_val
     CDD_Dates[[y]] <- max_dates
-    CDD_Site_Values[[y]] <-  max_site_vals
+    
   }
   
   
   ###----Changing to a useful output format---###
-  Grid_Values <- Grid_Dates <- Site_Values <- list()
+  Grid_Values <- Grid_Dates <- list()
   for(j in 1:length(block_sizes)) {
     
     #Getting the Grid Values
@@ -199,19 +194,13 @@ for(rto in 1:n_regions){
     }
     Grid_Dates[[j]] <- temp
     
-    #Getting the Site Values
-    temp <- matrix(NA, ncol = nrow(grid_locs), nrow = length(yrs))
-    for(i in 1:length(yrs)){
-      temp[i,] <- CDD_Site_Values[[i]][[j]]
-    }
-    Site_Values[[j]] <- temp
   }
   
   #Creating a Single List
   CDD_Regional <- list()
   CDD_Regional[[1]] <- Grid_Values
   CDD_Regional[[2]] <- Grid_Dates
-  CDD_Regional[[3]] <- Site_Values
+  CDD_Regional[[3]] <- unlist(CDD_Mean)
   
   #Plots - Consistency Checks
   plot(yrs, CDD_Regional[[1]][[1]], type='l',
@@ -219,29 +208,6 @@ for(rto in 1:n_regions){
        main = " Annual Maximum CDD across CONUS for 6 hr events")
   mtext(paste0(nerc_labels[rto]), side = 3,
         cex = 1.15)
-  
-  #Spatial Plots
-  sub_region <- nerc_sf$Shapefiles[[rto]]
-  pt_dt <- CDD_Regional[[3]][[1]]
-  pt_dt <- colMeans(pt_dt)
-  
-  p1 <- ggplot() +
-    geom_map(dat = world, map = world, aes(x=long, y=lat, map_id = region),
-             fill = "#D3D3D3", color = "#000000", size = 0.15) +
-    geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
-             fill = "#D3D3D3", color = "#000000", size = 0.15) +
-    scale_x_continuous(name = " ", limits = c(-125, -60))+
-    scale_y_continuous(name = " ", limits = c(20, 55)) +
-    geom_polygon(data = sub_region, mapping = aes( x = long, y = lat, group = group), 
-                 fill = NA, color = 'black', size = 1.2) +
-    geom_tile(data = grid_locs, aes(x=Longitude, y = Latitude, 
-                                    fill = pt_dt)) +
-    scale_fill_gradient2(midpoint=median(pt_dt),
-                         low="blue", mid="white",high="red",
-                         name = "CDD") +
-    ggtitle("Grid Maximum  - Block Size 6 Hours - Code Consistency Check")
-  print(p1)
-  
   
   ###Saving 
   NERC_CDD_Region[[rto]] <- CDD_Regional
@@ -253,4 +219,4 @@ for(rto in 1:n_regions){
 
 #______________________________________________________________________________#
 ##Saving the results
-save(NERC_CDD_Region, file = paste0("data/processed_data/CDD_Regional_2015.RData"))
+save(NERC_CDD_Region, file = paste0("data/processed_data/CDD_Regional.RData"))

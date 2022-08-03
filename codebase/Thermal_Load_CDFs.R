@@ -1,5 +1,5 @@
 #______________________________________________________________________________#
-####Objective :- To generate AM HDD Time Series (and Save) for each Sub-Region####
+####Objective :- To generate AM Thermal Heat Load Time Series (and Save) for each Sub-Region####
 
 
 ###This is done since reading and opening the ERA-5 data is a long process.
@@ -39,6 +39,7 @@ library(broom)
 library(rgdal)
 library(doParallel)
 library(foreach)
+library(patchwork)
 
 #Source functions
 source("functions/Get_Block_Maximum.R")
@@ -74,6 +75,13 @@ yrs <- 1951:2021
 block_sizes <- c(6,12,24,72, 168, 336) #hours
 
 
+nerc_labels <- c("Arizona/New Mexico", "CAISO", "ERCOT", "Florida", 
+                 "Wisconsin (Rural)", "Midwest (MISO)", "ISO New England", 
+                 "Northwest", "NYISO", "PJM (East)", "Michigan", "PJM (West)", 
+                 "Colorado", "Kansas", "Oklahoma", "Arkansas/Louisiana" , 
+                 "Missouri" ,"Southeast", "Tennesse Valley", "Carolinas")
+
+
 ###---Select Population Year---### 
 #Based on Column in Population -- 3-2000, 4-2005, 5-2010, 6-2015, 7-2020
 scenario <- 7
@@ -81,13 +89,14 @@ scenario <- 7
 
 #______________________________________________________________________________#
 ###----Code to get regional block Maxima----###
-get_hdd_maxima <- function(Population, Temp_grids, 
-                           Years, thresh_temp, 
-                           block_sizes, Scenario,rto){
+get_tl_maxima <- function(Population, Temp_grids, 
+                          Years, thresh_temp, 
+                          block_sizes, Scenario,rto, Labels){
   
   #Library
   library(zoo)
   library(ncdf4) 
+  library(patchwork)
   
   #Population Weights
   pop_cur <- Population[[rto]]
@@ -97,8 +106,7 @@ get_hdd_maxima <- function(Population, Temp_grids,
   grid_locs <- Temp_grids[[rto]]
   
   #Set-up Storage
-  HDD_Grid_Values <- HDD_Dates <-  list()
-  HDD_Mean <- list()
+  Thermal_Load_Mean <- list()
   
   pb = txtProgressBar(min = 1, max = length(Years), initial = 1) 
   for(y in 1:length(Years)){
@@ -110,8 +118,8 @@ get_hdd_maxima <- function(Population, Temp_grids,
     
     #Get the number of hours from Jan-01 to June 30
     st_date <- as.POSIXct(paste0("01-01-",yr," 00:00"), format="%m-%d-%Y %H:%M")
-    yr_end <- as.POSIXct(paste0("06-30-",yr," 23:00"), format="%m-%d-%Y %H:%M")
-    yr_start <- as.POSIXct(paste0("07-01-",yr-1," 00:00"), format="%m-%d-%Y %H:%M")
+    yr_end <- as.POSIXct(paste0("10-31-",yr," 23:00"), format="%m-%d-%Y %H:%M")
+    yr_start <- as.POSIXct(paste0("11-01-",yr-1," 00:00"), format="%m-%d-%Y %H:%M")
     hrs_ahead <- difftime(yr_end,st_date, units = "hours")
     hrs_behind <- difftime(st_date,yr_start, units = "hours")
     
@@ -174,84 +182,92 @@ get_hdd_maxima <- function(Population, Temp_grids,
     
     #--------------------------------------------------------------------------#
     ###Compute the Ann-Max HDD for the year
+    #HDD
     HDD <-  thresh_temp - t2m_land
     HDD[HDD<0] <- 0
     
+    #CDD
+    CDD <-  t2m_land - thresh_temp
+    CDD[CDD<0] <- 0
+    
+    #Thermal Load
+    Therm_Load <- CDD+HDD
+    
+    
     #Multiply by Population Density Weights
-    HDD <- sweep(HDD, MARGIN=2, population_wts , `*`)
+    Therm_Load <- sweep(Therm_Load, MARGIN=2, population_wts , `*`)
+    Therm_Load_Agg <- rowSums(Therm_Load)
     
-    HDD_Agg <- rowSums(HDD)
-    max_val <- max_dates <- max_site_vals <-  list()
-    
-    for(k in 1:length(block_sizes)) {
-      
-      #Setup current block  
-      cur_block <- block_sizes[k]
-      
-      #Dates
-      st_date <- paste0("01-01-",yr, " 00:00")
-      start_date <- as.POSIXlt(st_date, format="%m-%d-%Y %H:%M")
-      time_stamps <- seq(start_date, by = "hour", length.out = length(HDD_Agg))
-      
-      #Compute the moving average
-      df <- data.frame(Metric = HDD_Agg, 
-                       Dates = time_stamps, 
-                       Index = 1:length(HDD_Agg))
-      df$Block <- rollsum(df$Metric, cur_block, align = "center", fill = NA)
-      df$Metric <- NULL
-      df[is.na(df)] <- 0
-      max_index <- which(df$Block==max(df$Block))
-      
-      #Get the mean values across the grid
-      max_dates[[k]] <- df$Dates[max_index]- hrs_behind
-      max_val[[k]] <- df$Block[max_index]
-      
-      #Get the Site values
-      #max_site_vals[[k]] <- HDD[max_index,] #Just the middle hour
-      low_index <- max_index - cur_block*0.5 + 1
-      upper_index <- max_index + cur_block*0.5
-      temp_sites <- HDD[low_index:upper_index,]
-      max_site_vals[[k]] <- colSums(temp_sites)
-      
-    }
-    HDD <- NULL
-    
-    HDD_Mean[[y]] <- mean(HDD_Agg)
-    HDD_Grid_Values[[y]] <- max_val
-    HDD_Dates[[y]] <- max_dates
+    Thermal_Load_Mean[[y]] <- Therm_Load_Agg
     
   }
   
   
-  ###----Changing to a useful output format---###
-  Grid_Values <- Grid_Dates  <- list()
-  for(j in 1:length(block_sizes)) {
-    
-    #Getting the Grid Values
-    temp <- list()
-    for(i in 1:length(yrs)){
-      temp[[i]] <- HDD_Grid_Values[[i]][[j]]
-    }
-    Grid_Values[[j]] <- unlist(temp)
-    
-    #Getting the Grid Dates
-    temp <- seq(1:length(yrs))
-    for(i in 1:length(yrs)){
-      temp[i] <- as.character(HDD_Dates[[i]][[j]])
-    }
-    Grid_Dates[[j]] <- temp
-    
-  }
+  #Select the two periods
+  tl1 <- unlist(Thermal_Load_Mean[1:10])
+  tl2 <- unlist(Thermal_Load_Mean[62:71])
+  
+  #Compute the densities
+  ds1 <- density(tl1)
+  ds2 <- density(tl2)
+
+  #Plotting Dataset
+  plt_dataset <- data.frame(x = c(ds1$x,ds2$x),
+                            y = c(ds1$y,ds2$y),
+                            Type = c(rep("1951-1960", length(ds1$x)),
+                                     rep("2012-2021", length(ds1$x))))
+  
+  group.colors <- c("1951-1960" ="#af8dc3",  "2012-2021" = "#7fbf7b")
+  
+  p1 <- ggplot(plt_dataset) +
+    geom_line(aes(x=x,y=y, color = Type), size = 1.25) +
+    ggtitle("Density Plot") +
+    geom_vline(xintercept = mean(tl1), color = '#af8dc3', linetype = "dashed") +
+    geom_vline(xintercept = mean(tl2), color = '#7fbf7b', linetype = "dashed") +
+    ylab("Density") +
+    xlab("Thermal Load (oC)") +
+    scale_color_manual(values=group.colors) +
+    theme_bw() +
+    theme(axis.text=element_text(size=5),
+          axis.title=element_text(size=7),
+          plot.title = element_text(size=10),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.position="none")
+  
+  #Compute the CDFs
+  ds1 <- ecdf(tl1)
+  ds2 <- ecdf(tl2)
+  r1 <- seq(0,ceiling(max(tl1,tl2)), length.out = 200)
   
   
-  #Creating a Single List
-  HDD_Regional <- list()
-  HDD_Regional[[1]] <- Grid_Values
-  HDD_Regional[[2]] <- Grid_Dates
-  HDD_Regional[[3]] <- unlist(HDD_Mean)
+  #Plotting Dataset
+  plt_dataset <- data.frame(x = c(r1,r1),
+                            y = c(100-ds1(r1)*100, 100-ds2(r1)*100),
+                            Type = c(rep("1951-1960", length(r1)),
+                                     rep("2012-2021", length(r1))))
+  
+  p2 <- ggplot(plt_dataset) +
+    geom_line(aes(x=y,y=x, color = Type), size = 1.25) +
+    ggtitle(paste0("Load Duration Curve \n", Labels[rto])) +
+    geom_hline(yintercept = mean(tl1), color = '#af8dc3', 
+               linetype = "dashed", size = 1.25) +
+    geom_hline(yintercept = mean(tl2), color = '#7fbf7b', 
+               linetype = "dashed", size = 1.25) +
+    scale_color_manual(values=group.colors) +
+    ylab("Total Thermal Load (oC)") +
+    xlab("Capacity Utilization [Percent of Time (%)]") +
+    theme_bw() +
+    theme(axis.text=element_text(size=10),
+          axis.title=element_text(size=12),
+          plot.title = element_text(size=18))
+  
+  
+  
+  p3 <- p2 + inset_element(p1, left = 0.5, bottom = 0.4, right = 0.95, top = 0.95)
   
   ###Saving 
-  return(HDD_Regional)
+  return(p3)
   
   
 }
@@ -261,16 +277,17 @@ get_hdd_maxima <- function(Population, Temp_grids,
 cores=detectCores()
 registerDoParallel(cores)
 start.time <- Sys.time()
-NERC_HDD_Region <- foreach(rto = 1:n_regions, .verbose = TRUE) %dopar% {
+NERC_TL_Region <- foreach(rto = 1:n_regions, .verbose = TRUE) %dopar% {
   
-  
-  get_hdd_maxima(Population = population, 
-                 Temp_grids = all_grids,
-                 Years = yrs,
-                 thresh_temp = thresh_temp,
-                 block_sizes = block_sizes, 
-                 Scenario=scenario,
-                 rto=rto)
+  library(ggplot2)
+  get_tl_maxima(Population = population, 
+                Temp_grids = all_grids,
+                Years = yrs,
+                thresh_temp = thresh_temp,
+                block_sizes = block_sizes, 
+                Scenario=scenario,
+                rto=rto,
+                Labels = nerc_labels)
 }
 end.time <- Sys.time()
 time.taken <- end.time - start.time
@@ -278,24 +295,17 @@ print(time.taken)
 stopImplicitCluster()
 
 
-#______________________________________________________________________________#
-##Saving the results
-save(NERC_HDD_Region, file = paste0("data/processed_data/HDD_Regional.RData"))
+
 
 
 
 #------------------------------------------------------------------------------#
 #Plots - Consistency Check
-for(i in 1:length(NERC_HDD_Region)){
+for(i in 1:length(NERC_TL_Region)){
   
-  #Plots - Consistency Checks
-  plot(yrs, NERC_HDD_Region[[i]][[1]][[1]], type='l',
-       xlab = "Year", ylab = "Degree-Hours/Ann Max Event", 
-       main = " Annual Maximum HDD across CONUS for 6 hr events")
-  mtext(paste0(nerc_labels[i]), side = 3,
-        cex = 1.15)
+  print(NERC_TL_Region[[i]])
   
-
+  
 }
 
 
