@@ -49,7 +49,7 @@ pop_regions <- readOGR(dsn= paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data
 load("data/processed_data/Thermal_Load_Regional.RData") 
 
 
-pdf("figures/ISO_Plots.pdf", height=1850/300, width=5000/300)
+pdf("figures/ISO_Plots.pdf", height=3700/300, width=5000/200)
 
 
 #______________________________________________________________________________#
@@ -108,37 +108,18 @@ for(jk in 1:n_regions){
   
   
   #______________________________________________________________________________#
-  ###----Plot Two: Map of the Aggregated CDD-----###
+  ###----Plot Four: Map of the Aggregated Peak HDD and CDD-----###
   
   #Load Population and Temperature Grid Cell Data
   CDD_Regional <- get(load("data/processed_data/CDD_Regional.RData"))
-  cdd_agg <- CDD_Regional[[sel_rto]][[1]][[sel_block]]/24
+  cdd_agg <- CDD_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block]/24)
   
-  if(jk == 5){cdd_agg = cdd_agg[-65]}  #Temporary
+  if(jk == 5){cdd_agg = cdd_agg[-65]}  #Temporary - Ties
   
-  #Plotting Dataset
-  Plt_Dt <- data.frame(Years = 1950:2021,
-                       CDD = cdd_agg)
-  
-  
-  p2 <-  ggplot(Plt_Dt) +
-    geom_line(mapping = aes(x=Years, y = CDD)) +
-    geom_line(aes(x= Years, y=rollmean(CDD, 10, na.pad=TRUE)), color = 'red', size = 1.33) +
-    ggtitle(paste0("Peak Inferred Degree Days")) +
-    ylab("Population Adjusted Degree Days") +
-    theme_bw() +
-    theme(axis.text=element_text(size=10),
-          axis.title=element_text(size=12),
-          plot.title = element_text(size=20))
-  
-  
-  
-  #______________________________________________________________________________#
-  ###----Plot Four: Map of the Aggregated HDD and CDD-----###
   
   #Load Population and Temperature Grid Cell Data
   HDD_Regional <- get(load("data/processed_data/HDD_Regional.RData"))
-  hdd_agg <- HDD_Regional[[sel_rto]][[1]][[sel_block]]/24
+  hdd_agg <- HDD_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block]/24)
   
   
   #Plotting Dataset
@@ -149,43 +130,80 @@ for(jk in 1:n_regions){
                            CDD = cdd_agg)
   
   
-  p4 <-  ggplot() +
+  p2 <-  ggplot() +
     geom_line(Plt_Dt_HDD, mapping = aes(x=Years, y = HDD), col ='blue') +
     geom_line(Plt_Dt_HDD, mapping = aes(x= Years, 
                                         y=rollmean(HDD, 10, na.pad=TRUE)), 
-              color = 'blue', size = 1.33) +
+              color = 'blue', size = 1.33, linetype = "longdash") +
     geom_line(Plt_Dt_CDD, mapping = aes(x=Years, y = CDD), col='red') +
     geom_line(Plt_Dt_CDD, mapping = aes(x= Years, 
                                         y=rollmean(CDD, 10, na.pad=TRUE)), 
-              color = 'red', size = 1.33) +
-    ggtitle(paste0("Peak Inferred Degree Days")) +
-    ylab("Population Adjusted Degree Days") +
+              color = 'red', size = 1.33, linetype = "longdash") +
+    ggtitle(paste0("Peak Inferred Demand")) +
+    ylab(paste0("Population Adjusted Daily Degree Days \n (Averaged over ",
+                block_sizes[sel_block], " hours)")) +
     theme_bw() +
     theme(axis.text=element_text(size=10),
           axis.title=element_text(size=12),
-          plot.title = element_text(size=20))
+          plot.title = element_text(size=18))
+  
+  
+  #______________________________________________________________________________#
+  ###----Plot Four: Map of the Mean Peak HDD and CDD-----###
+  
+  #Load Population and Temperature Grid Cell Data
+  cdd_mean <- CDD_Regional[[sel_rto]][[3]]
+  
+  #Load Population and Temperature Grid Cell Data
+  hdd_mean <- HDD_Regional[[sel_rto]][[3]]
+  
+  
+  #Plotting Dataset
+  Plt_Dt_HDD <- data.frame(Years = 1951:2021,
+                           HDD = hdd_mean)
+  
+  Plt_Dt_CDD <- data.frame(Years = 1950:2021,
+                           CDD = cdd_mean)
+  
+  
+  p3 <-  ggplot() +
+    geom_line(Plt_Dt_HDD, mapping = aes(x=Years, y = HDD), col ='blue') +
+    geom_line(Plt_Dt_HDD, mapping = aes(x= Years, 
+                                        y=rollmean(HDD, 10, na.pad=TRUE)), 
+              color = 'blue', size = 1.33, linetype = "longdash") +
+    geom_line(Plt_Dt_CDD, mapping = aes(x=Years, y = CDD), col='red') +
+    geom_line(Plt_Dt_CDD, mapping = aes(x= Years, 
+                                        y=rollmean(CDD, 10, na.pad=TRUE)), 
+              color = 'red', size = 1.33, linetype = "longdash") +
+    ggtitle(paste0("Mean Inferred Demand")) +
+    ylab("Daily Aggregated Degree Hours") +
+    theme_bw() +
+    theme(axis.text=element_text(size=10),
+          axis.title=element_text(size=12),
+          plot.title = element_text(size=18))
   
   
   #______________________________________________________________________________#
   ###----Plot Three: Map of the Thermal Load Heat Factor-----###
   
   #Load Population and Temperature Grid Cell Data
-  Thermal_Load <- 72*NERC_TL_Region[[sel_rto]][[3]]/NERC_TL_Region[[sel_rto]][[1]][[4]]
+  Thermal_Load <- block_sizes[sel_block]*NERC_TL_Region[[sel_rto]][[3]]/NERC_TL_Region[[sel_rto]][[1]][[4]]
   
   #Plotting Dataset
   Plt_Dt <- data.frame(Years = 1951:2021,
                        TL = Thermal_Load)
   
   
-  p5 <-  ggplot(Plt_Dt) +
+  p4 <-  ggplot(Plt_Dt) +
     geom_line(mapping = aes(x=Years, y = TL)) +
-    geom_line(aes(x= Years, y=rollmean(TL, 10, na.pad=TRUE)), color = 'black', size = 1.33) +
-    ggtitle(paste0("Thermal Load - Load Factor")) +
+    geom_line(aes(x= Years, y=rollmean(TL, 10, na.pad=TRUE)), 
+              color = 'black', size = 1.33, linetype = "dashed") +
+    ggtitle(paste0("Load Factors \n Total Thermal Load")) +
     ylab("Load Factor") +
     theme_bw() +
     theme(axis.text=element_text(size=10),
           axis.title=element_text(size=12),
-          plot.title = element_text(size=20))
+          plot.title = element_text(size=18))
   
   
   
@@ -193,10 +211,9 @@ for(jk in 1:n_regions){
   
   
   #______________________________________________________________________________#
+  #Arrange the Entire plot
   
-  #grid.arrange(p1,p2,p3,p5, nrow = 2)
-  
-  grid.arrange(p1,p4,p5, nrow = 1)
+  grid.arrange(p1,p4,p2,p3, nrow = 2)
   
 }
 

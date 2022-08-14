@@ -297,7 +297,7 @@ stopImplicitCluster()
 
 
 
-
+pdf("figures/Load_Duration_Curves.pdf")
 
 #------------------------------------------------------------------------------#
 #Plots - Consistency Check
@@ -308,4 +308,4 @@ for(i in 1:length(NERC_TL_Region)){
   
 }
 
-
+dev.off()
