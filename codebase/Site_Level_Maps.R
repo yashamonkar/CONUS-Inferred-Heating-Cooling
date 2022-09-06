@@ -804,8 +804,20 @@ pf <- plot_grid(p_total, legend_b, ncol = 1, rel_heights = c(1, .2))
 
 print(pf)
 
+dev.off()
 
 
+#------------------------------------------------------------------------------#
+#Additional Plots
 
+#Save the plots
+pdf("figures/Sites_CONUS_Load_Factors.pdf", height=1850/300, width=2500/300)
+
+p_total <- plot_grid(p3 + theme(legend.position="none"),
+                     nrow =1)
+
+pf <- plot_grid(p_total, legend_b, ncol = 1, rel_heights = c(1, .2))
+
+print(pf)
 
 dev.off()
