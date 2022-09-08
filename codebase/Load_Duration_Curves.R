@@ -2,9 +2,6 @@
 ####Objective :- To generate Load Duration Curves for Florida and MISO####
 
 
-
-
-
 ###Input Needed
 #1. ERA-5 Temperature Gridded Data. -- Data
 #2. NERC Shape-Files -- Indexing
@@ -260,7 +257,8 @@ get_tl_maxima <- function(Population, Temp_grids,
     theme_bw() +
     theme(axis.text=element_text(size=10),
           axis.title=element_text(size=12),
-          plot.title = element_text(size=18))
+          plot.title = element_text(size=18),
+          legend.position="bottom")
   
   
   
@@ -304,16 +302,16 @@ p_total <- plot_grid(p1 + theme(legend.position="none"),
                      labels = c('A', 'B'), 
                      label_size = 12)
 
-legend_b <- get_legend(
-  p1 + guides(color = guide_legend(nrow = 1, override.aes = list(size=2))) +
-    theme(legend.position = "bottom", legend.direction = "horizontal")
-)
+#legend_b <- get_legend(
+#  p1 + guides(color = guide_legend(nrow = 1, override.aes = list(size=2))) +
+#    theme(legend.position = "bottom", legend.direction = "horizontal")
+#)
 
-pf <- plot_grid(p_total, legend_b, ncol = 1, rel_heights = c(1, .2))
+#pf <- plot_grid(p_total, legend_b, ncol = 1, rel_heights = c(1, .2))
 
 
-pdf("figures/Load_Duration_Curves.pdf", height=1850/500, width=5000/500)
+pdf("figures/Load_Duration_Curves.pdf", height=1850/300, width=5000/300)
 
-print(pf)
+print(p_total)
 
 dev.off()
