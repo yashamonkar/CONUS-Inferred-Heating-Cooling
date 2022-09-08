@@ -249,7 +249,7 @@ get_tl_maxima <- function(Population, Temp_grids,
   
   p2 <- ggplot(plt_dataset) +
     geom_line(aes(x=y,y=x, color = Type), size = 1.25) +
-    ggtitle(paste0("Load Duration Curve \n", Labels[rto])) +
+    ggtitle(paste0(Labels[rto])) +
     geom_hline(yintercept = mean(tl1), color = '#af8dc3', 
                linetype = "dashed", size = 1.25) +
     geom_hline(yintercept = mean(tl2), color = '#7fbf7b', 
@@ -260,7 +260,8 @@ get_tl_maxima <- function(Population, Temp_grids,
     theme_bw() +
     theme(axis.text=element_text(size=10),
           axis.title=element_text(size=12),
-          plot.title = element_text(size=18))
+          plot.title = element_text(size=18),
+          legend.position="none")
   
   
   
@@ -297,15 +298,45 @@ stopImplicitCluster()
 
 
 
-pdf("figures/Load_Duration_Curves.pdf")
+pdf("figures/Load_Duration_Curves_Supplement.pdf", height=5550/300, width=7000/300)
 
 #------------------------------------------------------------------------------#
 #Plots - Consistency Check
-for(i in 1:length(NERC_TL_Region)){
-  
-  print(NERC_TL_Region[[i]])
-  
-  
-}
+
+plot_grid(NERC_TL_Region[[1]],
+          NERC_TL_Region[[2]],
+          NERC_TL_Region[[3]],
+          NERC_TL_Region[[5]],
+          NERC_TL_Region[[7]],
+          NERC_TL_Region[[8]],
+          nrow = 3,
+          labels = c('A', 'B', 'C', 'D', 'E', 'F'), 
+          label_size = 12)
+
+
+plot_grid(NERC_TL_Region[[9]],
+          NERC_TL_Region[[10]],
+          NERC_TL_Region[[11]],
+          NERC_TL_Region[[12]],
+          NERC_TL_Region[[13]],
+          NERC_TL_Region[[14]],
+          nrow = 3,
+          labels = c('H', 'I', 'J', 'K', 'L', 'M'), 
+          label_size = 12)
+
+
+
+plot_grid(NERC_TL_Region[[15]],
+          NERC_TL_Region[[16]],
+          NERC_TL_Region[[17]],
+          NERC_TL_Region[[18]],
+          NERC_TL_Region[[19]],
+          NERC_TL_Region[[20]],
+          nrow = 3,
+          labels = c('N', 'O', 'P', 'Q', 'R', 'S'), 
+          label_size = 12)
+
+
+
 
 dev.off()
