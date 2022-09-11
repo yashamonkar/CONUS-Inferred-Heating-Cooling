@@ -32,6 +32,7 @@ library(cowplot)
 
 #Load Functions
 source("functions/Get_Day_Difference.R")
+source("functions/Get_Field_Significance.R")
 
 #Load Temperature Grid Cell Data
 load("data/processed_data/HDD_Site_Level.RData")  
@@ -821,3 +822,36 @@ pf <- plot_grid(p_total, legend_b, ncol = 1, rel_heights = c(1, .2))
 print(pf)
 
 dev.off()
+
+
+
+
+#______________________________________________________________________________#
+#______________________________________________________________________________#
+#______________________________________________________________________________#
+
+#Cooling Demand
+start.time <- Sys.time()
+get_field_significance(Data_Matrix = CONUS_CDD_Site$Mean,
+                       p_thresh = 0.05)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+print(time.taken)
+
+
+#Heating Demand
+start.time <- Sys.time()
+get_field_significance(Data_Matrix = CONUS_HDD_Site$Mean,
+                       p_thresh = 0.05)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+print(time.taken)
+
+
+#Thermal Demand
+start.time <- Sys.time()
+get_field_significance(Data_Matrix = CONUS_Thermal_Load_Site$Mean,
+                       p_thresh = 0.05)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+print(time.taken)

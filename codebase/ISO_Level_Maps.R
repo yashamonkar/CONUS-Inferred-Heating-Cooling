@@ -21,6 +21,7 @@ library(rgdal)
 library(ggpattern)
 library(gridExtra)
 library(zoo)
+library(cowplot)
 
 #Load Functions
 source("functions/Get_Day_Difference.R")
@@ -49,7 +50,7 @@ pop_regions <- readOGR(dsn= paste0("~/GitHub/CONUS-Inferred-Heating-Cooling/data
 load("data/processed_data/Thermal_Load_Regional.RData") 
 
 
-pdf("figures/ISO_Plots.pdf", height=3700/300, width=5000/200)
+pdf("figures/ISO_Plots.pdf", height=3700/300, width=5000/300)
 
 
 #______________________________________________________________________________#
@@ -98,7 +99,7 @@ for(jk in 1:n_regions){
              fill = NA, color = "#000000", size = 0.15) +
     scale_x_continuous(name = " ", limits = c(lon_min, lon_max)) +
     scale_y_continuous(name = " ", limits = c(lat_min, lat_max)) +
-    ggtitle(paste0(RTO_Label)) +
+    ggtitle(paste0("  ",RTO_Label)) +
     theme_bw() +
     theme(axis.text=element_text(size=0),
           axis.title=element_text(size=0),
@@ -210,10 +211,15 @@ for(jk in 1:n_regions){
   
   
   
-  #______________________________________________________________________________#
-  #Arrange the Entire plot
+  ###---------------Combine the plots------------------------------------------###
   
-  grid.arrange(p1,p4,p2,p3, nrow = 2)
+  
+  p_total <- plot_grid(p1,p4,p2,p3,
+                       nrow =2,
+                       labels = c('A', 'B', 'C', 'D'), 
+                       label_size = 14)
+  
+  print(p_total)
   
 }
 

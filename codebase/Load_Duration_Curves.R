@@ -246,7 +246,7 @@ get_tl_maxima <- function(Population, Temp_grids,
   
   p2 <- ggplot(plt_dataset) +
     geom_line(aes(x=y,y=x, color = Type), size = 1.25) +
-    ggtitle(paste0("Load Duration Curve \n", Labels[rto])) +
+    ggtitle(paste0("Thermal Load Duration Curve \n", Labels[rto])) +
     geom_hline(yintercept = mean(tl1), color = '#af8dc3', 
                linetype = "dashed", size = 1.25) +
     geom_hline(yintercept = mean(tl2), color = '#7fbf7b', 
