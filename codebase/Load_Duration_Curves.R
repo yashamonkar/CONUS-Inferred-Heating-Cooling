@@ -245,8 +245,8 @@ get_tl_maxima <- function(Population, Temp_grids,
                                      rep("2012-2021", length(r1))))
   
   p2 <- ggplot(plt_dataset) +
-    geom_line(aes(x=y,y=x, color = Type), size = 1.25) +
-    ggtitle(paste0("Thermal Load Duration Curve \n", Labels[rto])) +
+    geom_line(aes(x=y,y=x, color = Type), size = 1.5) +
+    ggtitle(paste0("Thermal Load Duration Curve - ", Labels[rto])) +
     geom_hline(yintercept = mean(tl1), color = '#af8dc3', 
                linetype = "dashed", size = 1.25) +
     geom_hline(yintercept = mean(tl2), color = '#7fbf7b', 
@@ -255,14 +255,16 @@ get_tl_maxima <- function(Population, Temp_grids,
     ylab("Total Thermal Load (oC)") +
     xlab("Capacity Utilization [Percent of Time (%)]") +
     theme_bw() +
-    theme(axis.text=element_text(size=10),
-          axis.title=element_text(size=12),
-          plot.title = element_text(size=18),
+    theme(axis.text=element_text(size=18),
+          axis.title=element_text(size=18),
+          plot.title = element_text(size=20),
+          legend.text=element_text(size=22),
+          legend.title=element_text(size=22),
           legend.position="bottom")
   
   
   
-  p3 <- p2 + inset_element(p1, left = 0.5, bottom = 0.4, right = 0.95, top = 0.95)
+  p3 <- p2 + inset_element(p1, left = 0.4, bottom = 0.4, right = 0.95, top = 0.95)
   
   ###Saving 
   return(p3)
@@ -300,7 +302,7 @@ p_total <- plot_grid(p1 + theme(legend.position="none"),
                      p2 + theme(legend.position="none"),
                      nrow = 1,
                      labels = c('A', 'B'), 
-                     label_size = 12)
+                     label_size = 14)
 
 #legend_b <- get_legend(
 #  p1 + guides(color = guide_legend(nrow = 1, override.aes = list(size=2))) +
@@ -310,7 +312,7 @@ p_total <- plot_grid(p1 + theme(legend.position="none"),
 #pf <- plot_grid(p_total, legend_b, ncol = 1, rel_heights = c(1, .2))
 
 
-pdf("figures/Load_Duration_Curves.pdf", height=1850/300, width=5000/300)
+pdf("figures/Load_Duration_Curves.pdf", height=2500/300, width=5000/300)
 
 print(p_total)
 
