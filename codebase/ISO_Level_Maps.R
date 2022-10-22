@@ -86,8 +86,8 @@ p1 <-  ggplot() +
            fill = "#D3D3D3", color = NA) +
   geom_polygon(data = sub_region, mapping = aes( x = long, y = lat, group = group), 
                fill = "#FFFFFF", color = 'black', size = 1) + 
-  geom_polygon(data = pop_regions, mapping = aes( x = long, y = lat, group = group), 
-               fill = "black", color = NA, alpha = 0.2) +
+  #geom_polygon(data = pop_regions, mapping = aes( x = long, y = lat, group = group), 
+  #            fill = "black", color = NA, alpha = 0.2) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "#000000", size = 0.15) +
   scale_x_continuous(name = " ", limits = c(lon_min, lon_max)) +
@@ -97,7 +97,7 @@ p1 <-  ggplot() +
   theme(axis.text=element_text(size=0),
         axis.title=element_text(size=0),
         axis.ticks = element_blank(),
-        plot.title = element_text(size=20))
+        plot.title = element_text(size=28))
 
 
 #______________________________________________________________________________#
@@ -113,24 +113,26 @@ tl_mean <- TL_Regional[[sel_rto]][[3]]
 #Plotting Dataset
 Plt_Dt_HDD <- data.frame(Years = 1951:2021,
                          DD = hdd_mean,
-                         Demand = "Heating")
+                         Type = "Heating_Demand")
 
 Plt_Dt_CDD <- data.frame(Years = 1950:2021,
                          DD = cdd_mean,
-                         Demand = "Cooling")
+                         Type = "Cooling_Demand")
 
 Plt_Dt_TL <- data.frame(Years = 1951:2021,
                         DD = tl_mean,
-                        Demand = "Total_Thermal")
+                        Type = "Total_Thermal_Demand")
 
 #Combine the Datasets
 Plt_Dataset <- rbind(Plt_Dt_CDD, Plt_Dt_HDD, Plt_Dt_TL)
 
-group.colors <- c(Heating ="#ff0000", Cooling = "#0000FF", Total_Thermal = "#000000")
+group.colors <- c(Heating_Demand ="#ff0000",
+                  Cooling_Demand = "#0000FF",
+                  Total_Thermal_Demand = "#000000")
 
 
 p2 <-  ggplot() +
-  geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Demand)) +
+  geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Type)) +
   geom_line(Plt_Dt_HDD, mapping = aes(x= Years, 
                                       y=rollmean(DD, 10, na.pad=TRUE)), 
             color = "#ff0000", size = 1.33, linetype = "longdash") +
@@ -145,9 +147,9 @@ p2 <-  ggplot() +
   theme_bw() +
   theme(legend.text=element_text(size=24),
         legend.title=element_text(size=24),
-        axis.text=element_text(size=14),
-        axis.title=element_text(size=14),
-        plot.title = element_text(size=20)) +
+        axis.text=element_text(size=18),
+        axis.title=element_text(size=18),
+        plot.title = element_text(size=24)) +
   scale_color_manual(values=group.colors)
 
 
@@ -174,8 +176,8 @@ p3 <-  ggplot() +
            fill = "#D3D3D3", color = NA) +
   geom_polygon(data = sub_region, mapping = aes( x = long, y = lat, group = group), 
                fill = "#FFFFFF", color = 'black', size = 1) + 
-  geom_polygon(data = pop_regions, mapping = aes( x = long, y = lat, group = group), 
-               fill = "black", color = NA, alpha = 0.2) +
+  #geom_polygon(data = pop_regions, mapping = aes( x = long, y = lat, group = group), 
+  #             fill = "black", color = NA, alpha = 0.2) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "#000000", size = 0.15) +
   scale_x_continuous(name = " ", limits = c(lon_min, lon_max)) +
@@ -185,7 +187,7 @@ p3 <-  ggplot() +
   theme(axis.text=element_text(size=0),
         axis.title=element_text(size=0),
         axis.ticks = element_blank(),
-        plot.title = element_text(size=20))
+        plot.title = element_text(size=28))
 
 
 #______________________________________________________________________________#
@@ -201,24 +203,25 @@ tl_mean <- TL_Regional[[sel_rto]][[3]]
 #Plotting Dataset
 Plt_Dt_HDD <- data.frame(Years = 1951:2021,
                          DD = hdd_mean,
-                         Demand = "Heating")
+                         Type = "Heating_Demand")
 
 Plt_Dt_CDD <- data.frame(Years = 1950:2021,
                          DD = cdd_mean,
-                         Demand = "Cooling")
+                         Type = "Cooling_Demand")
 
 Plt_Dt_TL <- data.frame(Years = 1951:2021,
                         DD = tl_mean,
-                        Demand = "Total_Thermal")
+                        Type = "Total_Thermal_Demand")
 
 #Combine the Datasets
 Plt_Dataset <- rbind(Plt_Dt_CDD, Plt_Dt_HDD, Plt_Dt_TL)
 
-group.colors <- c(Heating ="#ff0000", Cooling = "#0000FF", Total_Thermal = "#000000")
-
+group.colors <- c(Heating_Demand ="#ff0000",
+                  Cooling_Demand = "#0000FF",
+                  Total_Thermal_Demand = "#000000")
 
 p4 <-  ggplot() +
-  geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Demand)) +
+  geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Type)) +
   geom_line(Plt_Dt_HDD, mapping = aes(x= Years, 
                                       y=rollmean(DD, 10, na.pad=TRUE)), 
             color = "#ff0000", size = 1.33, linetype = "longdash") +
@@ -233,9 +236,9 @@ p4 <-  ggplot() +
   theme_bw() +
   theme(legend.text=element_text(size=24),
         legend.title=element_text(size=24),
-        axis.text=element_text(size=14),
-        axis.title=element_text(size=14),
-        plot.title = element_text(size=20)) +
+        axis.text=element_text(size=18),
+        axis.title=element_text(size=18),
+        plot.title = element_text(size=24)) +
   scale_color_manual(values=group.colors)
 
 
@@ -286,21 +289,21 @@ tl_agg <- TL_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block]/24)
 #Plotting Dataset
 Plt_Dt_HDD <- data.frame(Years = 1951:2021,
                          DD = hdd_agg,
-                         Demand = "Heating")
+                         Type = "Heating_Demand")
   
 Plt_Dt_CDD <- data.frame(Years = 1950:2021,
                          DD = cdd_agg,
-                         Demand = "Cooling")
+                         Type = "Cooling_Demand")
 
 Plt_Dt_TL <- data.frame(Years = 1951:2021,
                         TL = tl_agg)
 
 #Combine the Datasets
 Plt_Dataset <- rbind(Plt_Dt_CDD, Plt_Dt_HDD)
-group.colors <- c(Heating ="#ff0000", Cooling = "#0000FF")
+group.colors <- c(Heating_Demand ="#ff0000", Cooling_Demand = "#0000FF")
   
 p1 <-  ggplot() +
-  geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Demand), size = 1) +
+  geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Type), size = 1) +
   geom_point(Plt_Dt_TL, mapping = aes(x=Years, y = TL), size = 2) +
   ggtitle(paste0("Peak Inferred Thermal Demand - ", RTO_Label)) +
   ylab(paste0("Population Adjusted Daily Degree Days \n (Averaged over ",
@@ -308,9 +311,9 @@ p1 <-  ggplot() +
   theme_bw() +
   theme(legend.text=element_text(size=24),
         legend.title=element_text(size=24),
-        axis.text=element_text(size=16),
-        axis.title=element_text(size=14),
-        plot.title = element_text(size=20)) +
+        axis.text=element_text(size=20),
+        axis.title=element_text(size=16),
+        plot.title = element_text(size=23)) +
   scale_color_manual(values=group.colors)
 
 
@@ -328,21 +331,21 @@ tl_agg <- TL_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block]/24)
 #Plotting Dataset
 Plt_Dt_HDD <- data.frame(Years = 1951:2021,
                          DD = hdd_agg,
-                         Demand = "Heating")
+                         Type = "Heating_Demand")
 
 Plt_Dt_CDD <- data.frame(Years = 1950:2021,
                          DD = cdd_agg,
-                         Demand = "Cooling")
+                         Type = "Cooling_Demand")
 
 Plt_Dt_TL <- data.frame(Years = 1951:2021,
                         TL = tl_agg)
 
 #Combine the Datasets
 Plt_Dataset <- rbind(Plt_Dt_CDD, Plt_Dt_HDD)
-group.colors <- c(Heating ="#ff0000", Cooling = "#0000FF")
+group.colors <- c(Heating_Demand ="#ff0000", Cooling_Demand = "#0000FF")
 
 p2 <-  ggplot() +
-  geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Demand), size = 1) +
+  geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Type), size = 1) +
   geom_point(Plt_Dt_TL, mapping = aes(x=Years, y = TL), size = 2) +
   ggtitle(paste0("Peak Inferred Thermal Demand - ", RTO_Label)) +
   ylab(paste0("Population Adjusted Daily Degree Days \n (Averaged over ",
@@ -350,9 +353,9 @@ p2 <-  ggplot() +
   theme_bw() +
   theme(legend.text=element_text(size=24),
         legend.title=element_text(size=24),
-        axis.text=element_text(size=16),
-        axis.title=element_text(size=14),
-        plot.title = element_text(size=20)) +
+        axis.text=element_text(size=20),
+        axis.title=element_text(size=16),
+        plot.title = element_text(size=23)) +
   scale_color_manual(values=group.colors)
 
 
@@ -363,7 +366,7 @@ p_total <- plot_grid(p1 + theme(legend.position="none"),
                      p2 + theme(legend.position="none"),
                      nrow =1,
                      labels = c('A', 'B'), 
-                     label_size = 14)
+                     label_size = 20)
 
 
 legend_b <- get_legend(p1 + 
@@ -372,7 +375,6 @@ legend_b <- get_legend(p1 +
 )
 
 pf <- plot_grid(p_total, legend_b, ncol = 1, rel_heights = c(1, .1))
-
 
 
 pdf("figures/ISO_Plots_2.pdf", height=1850/300, width=5000/300)
@@ -406,12 +408,12 @@ p1 <-  ggplot(Plt_Dt) +
   geom_line(mapping = aes(x=Years, y = TL)) +
   geom_line(aes(x= Years, y=rollmean(TL, 10, na.pad=TRUE)), 
             color = 'black', size = 1.33, linetype = "dashed") +
-  ggtitle(paste0("Thermal Load Factor - ", RTO_Label)) +
+  ggtitle(paste0(" Thermal Load Factor - ", RTO_Label)) +
   ylab("Load Factor") +
   theme_bw() +
-  theme(axis.text=element_text(size=14),
-        axis.title=element_text(size=14),
-        plot.title = element_text(size=20))
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=24),
+        plot.title = element_text(size=28))
 
 
 #______________________________________________________________________________#
@@ -432,20 +434,19 @@ p2 <-  ggplot(Plt_Dt) +
   geom_line(mapping = aes(x=Years, y = TL)) +
   geom_line(aes(x= Years, y=rollmean(TL, 10, na.pad=TRUE)), 
             color = 'black', size = 1.33, linetype = "dashed") +
-  ggtitle(paste0("Thermal Load Factor - ", RTO_Label)) +
+  ggtitle(paste0(" Thermal Load Factor - ", RTO_Label)) +
   ylab("Load Factor") +
   theme_bw() +
-  theme(axis.text=element_text(size=14),
-        axis.title=element_text(size=14),
-        plot.title = element_text(size=20))
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=24),
+        plot.title = element_text(size=28))
 
   
   
 ###---------------Combine the plots------------------------------------------###
 p_total <- plot_grid(p1,p2, nrow =1,
                      labels = c('A', 'B'), 
-                     label_size = 14)
-
+                     label_size = 20)
 
 pdf("figures/ISO_Plots_3.pdf", height=1850/300, width=5000/300)
 print(p_total)

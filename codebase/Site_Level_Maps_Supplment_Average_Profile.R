@@ -89,7 +89,7 @@ p1 <- ggplot() +
         axis.text=element_text(size=0),
         axis.title=element_text(size=0),
         axis.ticks = element_blank(),
-        plot.title = element_text(size=20),
+        plot.title = element_text(size=28),
         legend.key.width = unit(2, "cm")) 
 
 
@@ -113,7 +113,7 @@ p2 <- ggplot() +
         axis.text=element_text(size=0),
         axis.title=element_text(size=0),
         axis.ticks = element_blank(),
-        plot.title = element_text(size=20),
+        plot.title = element_text(size=28),
         legend.key.width = unit(2, "cm")) 
 
 
@@ -137,7 +137,7 @@ p3 <- ggplot() +
         axis.text=element_text(size=0),
         axis.title=element_text(size=0),
         axis.ticks = element_blank(),
-        plot.title = element_text(size=20),
+        plot.title = element_text(size=28),
         legend.key.width = unit(2, "cm")) 
 
 
@@ -151,7 +151,7 @@ p_total <- plot_grid(p1 + theme(legend.position="none"),
                      p3 + theme(legend.position="none"),
                      nrow =2,
                      labels = c('A', 'B', 'C'), 
-                     label_size = 14)
+                     label_size = 20)
 
 legend_b <- get_legend(
   p1 + 
