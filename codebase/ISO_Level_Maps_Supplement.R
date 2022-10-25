@@ -80,23 +80,25 @@ for(i in 1:length(nerc_labels)) {
   #Plotting Dataset
   Plt_Dt_HDD <- data.frame(Years = 1951:2021,
                            DD = hdd_mean,
-                           Demand = "Heating")
+                           Type = "Heating_Demand")
 
   Plt_Dt_CDD <- data.frame(Years = 1950:2021,
                            DD = cdd_mean,
-                           Demand = "Cooling")
+                           Type = "Cooling_Demand")
 
   Plt_Dt_TL <- data.frame(Years = 1951:2021,
                           DD = tl_mean,
-                          Demand = "Total_Thermal")
+                          Type = "Total_Thermal_Demand")
 
   #Combine the Datasets
   Plt_Dataset <- rbind(Plt_Dt_CDD, Plt_Dt_HDD, Plt_Dt_TL)
-  group.colors <- c(Heating ="#ff0000", Cooling = "#0000FF", Total_Thermal = "#000000")
+  group.colors <- c(Heating_Demand ="#ff0000", 
+                    Cooling_Demand = "#0000FF",
+                    Total_Thermal_Demand = "#000000")
 
 
   p1 <-  ggplot() +
-    geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Demand)) +
+    geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Type)) +
     geom_line(Plt_Dt_HDD, mapping = aes(x= Years, 
                                         y=rollmean(DD, 10, na.pad=TRUE)), 
               color = "#ff0000", size = 1.33, linetype = "longdash") +
@@ -111,9 +113,9 @@ for(i in 1:length(nerc_labels)) {
     theme_bw() +
     theme(legend.text=element_text(size=24),
           legend.title=element_text(size=24),
-          axis.text=element_text(size=14),
-          axis.title=element_text(size=14),
-          plot.title = element_text(size=20)) +
+          axis.text=element_text(size=18),
+          axis.title=element_text(size=18),
+          plot.title = element_text(size=28)) +
     scale_color_manual(values=group.colors)
   
   mean_plt[[i]] <- p1
@@ -139,7 +141,7 @@ p_total <- plot_grid(mean_plt[[1]] + theme(legend.position="none"),
                      mean_plt[[8]] + theme(legend.position="none"),
                      nrow =3,
                      labels = c('A', 'B', 'C', 'D', 'E', 'F'), 
-                     label_size = 14)
+                     label_size = 20)
 p_total <- plot_grid(p_total, legend_b, ncol = 1, rel_heights = c(1, .1))
 print(p_total)
 
@@ -152,7 +154,7 @@ p_total <- plot_grid(mean_plt[[9]] + theme(legend.position="none"),
                      mean_plt[[14]] + theme(legend.position="none"),
                      nrow =3,
                      labels = c('G', 'H', 'I', 'J', 'K', 'L'), 
-                     label_size = 14)
+                     label_size = 20)
 p_total <- plot_grid(p_total, legend_b, ncol = 1, rel_heights = c(1, .1))
 print(p_total)
 
@@ -166,7 +168,7 @@ p_total <- plot_grid(mean_plt[[15]] + theme(legend.position="none"),
                      mean_plt[[20]] + theme(legend.position="none"),
                      nrow =3,
                      labels = c('M', 'N', 'O', 'P', 'Q', 'R'), 
-                     label_size = 14)
+                     label_size = 20)
 p_total <- plot_grid(p_total, legend_b, ncol = 1, rel_heights = c(1, .1))
 print(p_total)
 
@@ -194,21 +196,21 @@ for(i in 1:length(nerc_labels)) {
   #Plotting Dataset
   Plt_Dt_HDD <- data.frame(Years = 1951:2021,
                            DD = hdd_agg,
-                           Demand = "Heating")
+                           Type = "Heating_Demand")
   
   Plt_Dt_CDD <- data.frame(Years = 1950:2021,
                            DD = cdd_agg,
-                           Demand = "Cooling")
+                           Type = "Cooling_Demand")
 
   Plt_Dt_TL <- data.frame(Years = 1951:2021,
                           TL = tl_agg)
   
   #Combine the Datasets
   Plt_Dataset <- rbind(Plt_Dt_CDD, Plt_Dt_HDD)
-  group.colors <- c(Heating ="#ff0000", Cooling = "#0000FF")
+  group.colors <- c(Heating_Demand ="#ff0000", Cooling_Demand = "#0000FF")
   
   p1 <-  ggplot() +
-    geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Demand), size = 1) +
+    geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Type), size = 1) +
     geom_point(Plt_Dt_TL, mapping = aes(x=Years, y = TL), size = 2) +
     ggtitle(paste0( RTO_Label)) +
     ylab(paste0("Population Adjusted Daily Degree Days \n (Averaged over ",
@@ -216,9 +218,9 @@ for(i in 1:length(nerc_labels)) {
     theme_bw() +
     theme(legend.text=element_text(size=24),
           legend.title=element_text(size=24),
-          axis.text=element_text(size=16),
-          axis.title=element_text(size=14),
-          plot.title = element_text(size=20)) +
+          axis.text=element_text(size=20),
+          axis.title=element_text(size=16),
+          plot.title = element_text(size=28)) +
     scale_color_manual(values=group.colors)
   
   peak_plt[[i]] <- p1
@@ -244,7 +246,7 @@ p_total <- plot_grid(peak_plt[[1]] + theme(legend.position="none"),
                      peak_plt[[8]] + theme(legend.position="none"),
                      nrow =3,
                      labels = c('A', 'B', 'C', 'D', 'E', 'F'), 
-                     label_size = 14)
+                     label_size = 20)
 p_total <- plot_grid(p_total, legend_b, ncol = 1, rel_heights = c(1, .1))
 print(p_total)
 
@@ -257,7 +259,7 @@ p_total <- plot_grid(peak_plt[[9]] + theme(legend.position="none"),
                      peak_plt[[14]] + theme(legend.position="none"),
                      nrow =3,
                      labels = c('G', 'H', 'I', 'J', 'K', 'L'), 
-                     label_size = 14)
+                     label_size = 20)
 p_total <- plot_grid(p_total, legend_b, ncol = 1, rel_heights = c(1, .1))
 print(p_total)
 
@@ -271,7 +273,7 @@ p_total <- plot_grid(peak_plt[[15]] + theme(legend.position="none"),
                      peak_plt[[20]] + theme(legend.position="none"),
                      nrow =3,
                      labels = c('M', 'N', 'O', 'P', 'Q', 'R'), 
-                     label_size = 14)
+                     label_size = 20)
 p_total <- plot_grid(p_total, legend_b, ncol = 1, rel_heights = c(1, .1))
 print(p_total)
 
@@ -284,7 +286,6 @@ print(p_total)
 #______________________________________________________________________________#
 #______________________________________________________________________________#
 #####------------------Plot 3 - Thermal Load Factors---------------------------#
-
   
 tl_plt <- list()
 for(i in 1:length(nerc_labels)) {
@@ -309,9 +310,9 @@ for(i in 1:length(nerc_labels)) {
     ggtitle(paste0(RTO_Label)) +
     ylab("Load Factor") +
     theme_bw() +
-    theme(axis.text=element_text(size=14),
-          axis.title=element_text(size=14),
-          plot.title = element_text(size=20))
+    theme(axis.text=element_text(size=20),
+          axis.title=element_text(size=20),
+          plot.title = element_text(size=28))
   
   tl_plt[[i]] <- p1
   
@@ -331,7 +332,7 @@ p_total <- plot_grid(tl_plt[[1]] + theme(legend.position="none"),
                      tl_plt[[8]] + theme(legend.position="none"),
                      nrow =3,
                      labels = c('A', 'B', 'C', 'D', 'E', 'F'), 
-                     label_size = 14)
+                     label_size = 20)
 print(p_total)
 
 #Generate base plot
@@ -343,7 +344,7 @@ p_total <- plot_grid(tl_plt[[9]] + theme(legend.position="none"),
                      tl_plt[[14]] + theme(legend.position="none"),
                      nrow =3,
                      labels = c('G', 'H', 'I', 'J', 'K', 'L'), 
-                     label_size = 14)
+                     label_size = 20)
 print(p_total)
 
 
@@ -356,7 +357,7 @@ p_total <- plot_grid(tl_plt[[15]] + theme(legend.position="none"),
                      tl_plt[[20]] + theme(legend.position="none"),
                      nrow =3,
                      labels = c('M', 'N', 'O', 'P', 'Q', 'R'), 
-                     label_size = 14)
+                     label_size = 20)
 print(p_total)
 
 dev.off()

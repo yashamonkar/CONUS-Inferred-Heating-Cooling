@@ -59,7 +59,6 @@ pdf("figures/Sites_CONUS_Supplement.pdf", height=5500/300, width=5000/300)
 
 
 
-
 #______________________________________________________________________________#
 ##----------------------Trends Analysis on Extreme Value---------------------###
 #Block
@@ -137,14 +136,14 @@ plot_list[[jk]] <- ggplot() +
   #             fill = NA, color = 'black', size = 0.25) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "brown", size = 0.15) +
-  ggtitle(paste0("CDD - ", block_sizes[j] ," hrs")) +
+  ggtitle(paste0(" Peak Cooling Demand Intensity - ", block_sizes[j] ," hrs")) +
   theme_bw() +
   theme(legend.text=element_text(size=20),
         legend.title=element_text(size=20),
         axis.text=element_text(size=0),
         axis.title=element_text(size=0),
         axis.ticks = element_blank(),
-        plot.title = element_text(size=15),
+        plot.title = element_text(size=28),
         legend.key.width = unit(2, "cm")) 
 
 
@@ -160,8 +159,9 @@ p_total <- plot_grid(plot_list[[1]]  + theme(legend.position="none"),
                      plot_list[[4]]  + theme(legend.position="none"),
                      plot_list[[5]] + theme(legend.position="none"),
                      plot_list[[6]] + theme(legend.position="none"),
+                     labels = c('A', 'B', 'C', 'D', 'E', 'F'), 
                      nrow =3,
-                     label_size = 12)
+                     label_size = 20)
 
 legend_b <- get_legend(
   plot_list[[1]] + 
@@ -254,14 +254,14 @@ plot_list[[jk]] <- ggplot() +
   #             fill = NA, color = 'black', size = 0.25) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "brown", size = 0.15) +
-  ggtitle(paste0("HDD - ", block_sizes[j] ," hrs")) +
+  ggtitle(paste0(" Peak Heating Demand Intensity - ", block_sizes[j] ," hrs")) +
   theme_bw() +
   theme(legend.text=element_text(size=20),
         legend.title=element_text(size=20),
         axis.text=element_text(size=0),
         axis.title=element_text(size=0),
         axis.ticks = element_blank(),
-        plot.title = element_text(size=15),
+        plot.title = element_text(size=28),
         legend.key.width  = unit(2, "cm"))
 
 
@@ -276,8 +276,9 @@ p_total <- plot_grid(plot_list[[1]]  + theme(legend.position="none"),
                      plot_list[[4]]  + theme(legend.position="none"),
                      plot_list[[5]] + theme(legend.position="none"),
                      plot_list[[6]] + theme(legend.position="none"),
+                     labels = c('A', 'B', 'C', 'D', 'E', 'F'), 
                      nrow =3,
-                     label_size = 12)
+                     label_size = 20)
 
 legend_b <- get_legend(
   plot_list[[1]] + 
@@ -369,14 +370,14 @@ plot_list[[jk]] <- ggplot() +
   #             fill = NA, color = 'black', size = 0.25) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "brown", size = 0.15) +
-  ggtitle(paste0("Thermal Load - ", block_sizes[j] ," hrs")) +
+  ggtitle(paste0(" Peak Total Thermal Demand Intensity - ", block_sizes[j] ," hrs")) +
   theme_bw() +
   theme(legend.text=element_text(size=20),
         legend.title=element_text(size=20),
         axis.text=element_text(size=0),
         axis.title=element_text(size=0),
         axis.ticks = element_blank(),
-        plot.title = element_text(size=15),
+        plot.title = element_text(size=24),
         legend.key.width  = unit(2, "cm"))
 
 }
@@ -390,8 +391,9 @@ p_total <- plot_grid(plot_list[[1]]  + theme(legend.position="none"),
                      plot_list[[4]]  + theme(legend.position="none"),
                      plot_list[[5]] + theme(legend.position="none"),
                      plot_list[[6]] + theme(legend.position="none"),
+                     labels = c('A', 'B', 'C', 'D', 'E', 'F'), 
                      nrow =3,
-                     label_size = 12)
+                     label_size = 20)
 
 legend_b <- get_legend(
   plot_list[[1]] + 
@@ -407,9 +409,6 @@ legend_b <- get_legend(
 pf <- plot_grid(p_total, legend_b, ncol = 1, rel_heights = c(1, .1))
 
 print(pf)
-
-
-
 
 
 
@@ -489,14 +488,14 @@ plot_list[[jk]] <- ggplot() +
   #             fill = NA, color = 'black', size = 0.25) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "brown", size = 0.15) +
-  ggtitle(paste0("CDD Load Factor - ", block_sizes[j] ," hrs")) +
+  ggtitle(paste0(" Cooling Demand - Load Factor - ", block_sizes[j] ," hrs")) +
   theme_bw() +
   theme(legend.text=element_text(size=20),
         legend.title=element_text(size=20),
         axis.text=element_text(size=0),
         axis.title=element_text(size=0),
         axis.ticks = element_blank(),
-        plot.title = element_text(size=15),
+        plot.title = element_text(size=28),
         legend.key.width = unit(2, "cm")) 
 
 }
@@ -510,8 +509,9 @@ p_total <- plot_grid(plot_list[[1]]  + theme(legend.position="none"),
                      plot_list[[4]]  + theme(legend.position="none"),
                      plot_list[[5]] + theme(legend.position="none"),
                      plot_list[[6]] + theme(legend.position="none"),
+                     labels = c('A', 'B', 'C', 'D', 'E', 'F'), 
                      nrow =3,
-                     label_size = 12)
+                     label_size = 20)
 
 legend_b <- get_legend(
   plot_list[[1]] + 
@@ -600,14 +600,14 @@ plot_list[[jk]] <- ggplot() +
   #             fill = NA, color = 'black', size = 0.25) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "brown", size = 0.15) +
-  ggtitle(paste0("HDD Load Factor - ", block_sizes[j] ," hrs")) +
+  ggtitle(paste0(" Heating Demand - Load Factor - ", block_sizes[j] ," hrs")) +
   theme_bw() +
   theme(legend.text=element_text(size=20),
         legend.title=element_text(size=20),
         axis.text=element_text(size=0),
         axis.title=element_text(size=0),
         axis.ticks = element_blank(),
-        plot.title = element_text(size=15),
+        plot.title = element_text(size=28),
         legend.key.width  = unit(2, "cm"))
 
 }
@@ -622,8 +622,9 @@ p_total <- plot_grid(plot_list[[1]]  + theme(legend.position="none"),
                      plot_list[[4]]  + theme(legend.position="none"),
                      plot_list[[5]] + theme(legend.position="none"),
                      plot_list[[6]] + theme(legend.position="none"),
+                     labels = c('A', 'B', 'C', 'D', 'E', 'F'), 
                      nrow =3,
-                     label_size = 12)
+                     label_size = 20)
 
 legend_b <- get_legend(
   plot_list[[1]] + 
@@ -717,14 +718,14 @@ plot_list[[jk]] <- ggplot() +
   #             fill = NA, color = 'black', size = 0.25) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "brown", size = 0.15) +
-  ggtitle(paste0("Thermal Load - Load Factor - ", block_sizes[j] ," hrs")) +
+  ggtitle(paste0(" Thermal Demand - Load Factor - ", block_sizes[j] ," hrs")) +
   theme_bw() +
   theme(legend.text=element_text(size=20),
         legend.title=element_text(size=20),
         axis.text=element_text(size=0),
         axis.title=element_text(size=0),
         axis.ticks = element_blank(),
-        plot.title = element_text(size=15),
+        plot.title = element_text(size=28),
         legend.key.width  = unit(2, "cm"))
 
 }
@@ -739,8 +740,9 @@ p_total <- plot_grid(plot_list[[1]]  + theme(legend.position="none"),
                      plot_list[[4]]  + theme(legend.position="none"),
                      plot_list[[5]] + theme(legend.position="none"),
                      plot_list[[6]] + theme(legend.position="none"),
+                     labels = c('A', 'B', 'C', 'D', 'E', 'F'), 
                      nrow =3,
-                     label_size = 12)
+                     label_size = 20)
 
 legend_b <- get_legend(
   plot_list[[1]] + 
