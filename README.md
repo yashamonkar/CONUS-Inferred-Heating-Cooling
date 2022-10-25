@@ -1,7 +1,7 @@
-# CONUS-Inferred-Heating-Cooling
+# How has a changing climate affected extreme heating and cooling demand across the contiguous United States?
 Study analyzing climatic drives and low frequency changes in CONUS wide inferred heating and cooling demand.
 
-This is the code repository for the paper "How has a changing climate affected extreme heating and cooling demand across the contiguous United States" by Yash Amonkar (Columbia), James Doss-Gollin (Rice University), David J Farnham (Carnegie Institue for Science/ClimateAi), Vijay Modi (Columbia University), and Upmanu Lall (Columbia). 
+This is the code repository for the paper "How has a changing climate affected extreme heating and cooling demand across the contiguous United States?" by Yash Amonkar (Columbia), James Doss-Gollin (Rice University), David J Farnham (Carnegie Institue for Science/ClimateAi), Vijay Modi (Columbia University), and Upmanu Lall (Columbia). 
 This work has been submitted to Nature Energy (https://www.nature.com/nenergy/) for consideration.
 
 
