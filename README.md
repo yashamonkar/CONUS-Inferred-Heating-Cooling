@@ -13,6 +13,8 @@ The analysis is presented at the local level and aggregated at electric grid sub
 
 The ERA-5 reanalysis data, for the Texas Interconnect region, is not added in this GitHub repository (due to size constraints) but is available at https://www.ecmwf.int/en/forecasts/datasets/reanalysis-datasets/era5.
 The temperature data are taken from ERA-5 renalysis and are at a 0.5 x 0.5 lat-lon resolution. 
+The entire repository along with the data and generated PDFs is stored here - 
+This is a version of the GitHub repository with data and simulations. Added separately due to the size constraints in GitHub.
 
 
 Abstract - 
