@@ -1,7 +1,9 @@
 #______________________________________________________________________________#
 ###---Script to generate CONUS wide plots for ISO Regions---###
-###1. Estimate the trend in population adjusted peak HDD/CDD for values and Dates
+###1. Estimate the trend in population adjusted peak HDD/CDD/Thermal for values and Dates
 ###2. at the ISO/Interconnect level.
+
+#One plot at the CONUS level, with the RTO boundaries and shading for slope and significance. 
 
 
 #______________________________________________________________________________#
