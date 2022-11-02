@@ -311,7 +311,7 @@ plot_grid(NERC_TL_Region[[1]],
           NERC_TL_Region[[8]],
           nrow = 3,
           labels = c('A', 'B', 'C', 'D', 'E', 'F'), 
-          label_size = 12)
+          label_size = 16)
 
 
 plot_grid(NERC_TL_Region[[9]],
@@ -321,8 +321,8 @@ plot_grid(NERC_TL_Region[[9]],
           NERC_TL_Region[[13]],
           NERC_TL_Region[[14]],
           nrow = 3,
-          labels = c('H', 'I', 'J', 'K', 'L', 'M'), 
-          label_size = 12)
+          labels = c('G', 'H', 'I', 'J', 'K', 'L'), 
+          label_size = 16)
 
 
 
@@ -333,8 +333,8 @@ plot_grid(NERC_TL_Region[[15]],
           NERC_TL_Region[[19]],
           NERC_TL_Region[[20]],
           nrow = 3,
-          labels = c('N', 'O', 'P', 'Q', 'R', 'S'), 
-          label_size = 12)
+          labels = c('M', 'N', 'O', 'P', 'Q', 'R'), 
+          label_size = 16)
 
 
 

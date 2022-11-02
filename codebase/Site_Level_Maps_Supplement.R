@@ -249,7 +249,7 @@ plot_list[[jk]] <- ggplot() +
   scale_x_continuous(name = " ", limits = c(-125, -65))+
   scale_y_continuous(name = " ", limits = c(24, 50)) +
   scale_fill_gradient2(midpoint=0, low="blue", mid="white",high="red", 
-                       limits = c(-1, 1)) +
+                       limits = c(-1, 1), name = "Scaled Slope (%/yr)  ") +
   #geom_polygon(data = egrids, mapping = aes( x = long, y = lat, group = group), 
   #             fill = NA, color = 'black', size = 0.25) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
@@ -365,7 +365,7 @@ plot_list[[jk]] <- ggplot() +
   scale_x_continuous(name = " ", limits = c(-125, -65))+
   scale_y_continuous(name = " ", limits = c(24, 50)) +
   scale_fill_gradient2(midpoint=0, low="blue", mid="white",high="red", 
-                       limits = c(-1, 1)) +
+                       limits = c(-1, 1), name = "Scaled Slope (%/yr)  ") +
   #geom_polygon(data = egrids, mapping = aes( x = long, y = lat, group = group), 
   #             fill = NA, color = 'black', size = 0.25) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
@@ -595,7 +595,7 @@ plot_list[[jk]] <- ggplot() +
   scale_x_continuous(name = " ", limits = c(-125, -65))+
   scale_y_continuous(name = " ", limits = c(24, 50)) +
   scale_fill_gradient2(midpoint=0, low="blue", mid="white",high="red", 
-                       limits = c(-1, 1)) +
+                       limits = c(-1, 1), name = "Scaled Slope (%/yr)  ") +
   #geom_polygon(data = egrids, mapping = aes( x = long, y = lat, group = group), 
   #             fill = NA, color = 'black', size = 0.25) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
@@ -713,7 +713,7 @@ plot_list[[jk]] <- ggplot() +
   scale_x_continuous(name = " ", limits = c(-125, -65))+
   scale_y_continuous(name = " ", limits = c(24, 50)) +
   scale_fill_gradient2(midpoint=0, low="blue", mid="white",high="red", 
-                       limits = c(-1, 1)) +
+                       limits = c(-1, 1), name = "Scaled Slope (%/yr)  ") +
   #geom_polygon(data = egrids, mapping = aes( x = long, y = lat, group = group), 
   #             fill = NA, color = 'black', size = 0.25) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
