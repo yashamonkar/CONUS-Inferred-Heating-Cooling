@@ -1,7 +1,7 @@
 #______________________________________________________________________________#
 ###---Script to generate CONUS wide site-level plots CDD, HDD and Thermal Load---###
 ###1. Estimate the trend in population adjusted peak HDD/CDD for values and Dates
-###2. at the the grid cell level. 
+###2. at the the grid cell level.
 
 ###Input
 #1. CDD AM Data
