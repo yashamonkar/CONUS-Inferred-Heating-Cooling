@@ -15,6 +15,7 @@ __pycache__/
 
 # PDF Files
 *.pdf
+!Differential_Effects__Current_Draft.pdf
 
 # Shape Files
 *.nc
