@@ -3,7 +3,7 @@
 Study analyzing climatic drives and low frequency changes in CONUS wide inferred heating and cooling demand.
 This is the code repository for the paper "Differential effects of climate change on average and peak demand for heating and cooling across the contiguous United States" by Yash Amonkar (Columbia), James Doss-Gollin (Rice University), David J Farnham (Carnegie Institue for Science/ClimateAi), Vijay Modi (Columbia University), and Upmanu Lall (Columbia). 
 This work has been submitted to Nature Energy (https://www.nature.com/nenergy/) for consideration.
-The current draft document can be accessed here - 
+The current draft document can be accessed here.
 
 
 The objective of this study is to analyze changes in the inferred cooling, heating and total thermal demand across the Continental United States. 
