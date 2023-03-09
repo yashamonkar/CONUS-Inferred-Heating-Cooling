@@ -113,22 +113,22 @@ tl_mean <- TL_Regional[[sel_rto]][[3]]
 #Plotting Dataset
 Plt_Dt_HDD <- data.frame(Years = 1951:2021,
                          DD = hdd_mean,
-                         Type = "Heating_Demand")
+                         Type = "Heating Demand")
 
 Plt_Dt_CDD <- data.frame(Years = 1950:2021,
                          DD = cdd_mean,
-                         Type = "Cooling_Demand")
+                         Type = "Cooling Demand")
 
 Plt_Dt_TL <- data.frame(Years = 1951:2021,
                         DD = tl_mean,
-                        Type = "Total_Thermal_Demand")
+                        Type = "Total Thermal Demand")
 
 #Combine the Datasets
 Plt_Dataset <- rbind(Plt_Dt_CDD, Plt_Dt_HDD, Plt_Dt_TL)
 
-group.colors <- c(Heating_Demand ="#ff0000",
-                  Cooling_Demand = "#0000FF",
-                  Total_Thermal_Demand = "#000000")
+#group.colors <- c(Heating_Demand ="#ff0000",
+#                  Cooling_Demand = "#0000FF",
+#                  Total_Thermal_Demand = "#000000")
 
 
 p2 <-  ggplot() +
@@ -142,15 +142,16 @@ p2 <-  ggplot() +
   geom_line(Plt_Dt_TL, mapping = aes(x= Years, 
                                      y=rollmean(DD, 10, na.pad=TRUE)), 
             color = "#000000", size = 1.33, linetype = "longdash") +
-  ggtitle(paste0("Mean Inferred Thermal Demand - ", RTO_Label)) +
-  ylab("Daily Aggregated Degree Hours") +
+  ylim(0, 14) +
+  ggtitle(paste0("Annual Mean Demand \n ", RTO_Label)) +
+  ylab("Inferred Demand (deg F)") +
   theme_bw() +
   theme(legend.text=element_text(size=24),
         legend.title=element_text(size=24),
         axis.text=element_text(size=18),
         axis.title=element_text(size=18),
         plot.title = element_text(size=24)) +
-  scale_color_manual(values=group.colors)
+  scale_color_manual(values=c("#0000FF", "#ff0000", "#000000"))
 
 
 
@@ -203,22 +204,19 @@ tl_mean <- TL_Regional[[sel_rto]][[3]]
 #Plotting Dataset
 Plt_Dt_HDD <- data.frame(Years = 1951:2021,
                          DD = hdd_mean,
-                         Type = "Heating_Demand")
+                         Type = "Heating Demand")
 
 Plt_Dt_CDD <- data.frame(Years = 1950:2021,
                          DD = cdd_mean,
-                         Type = "Cooling_Demand")
+                         Type = "Cooling Demand")
 
 Plt_Dt_TL <- data.frame(Years = 1951:2021,
                         DD = tl_mean,
-                        Type = "Total_Thermal_Demand")
+                        Type = "Total Thermal Demand")
 
 #Combine the Datasets
 Plt_Dataset <- rbind(Plt_Dt_CDD, Plt_Dt_HDD, Plt_Dt_TL)
 
-group.colors <- c(Heating_Demand ="#ff0000",
-                  Cooling_Demand = "#0000FF",
-                  Total_Thermal_Demand = "#000000")
 
 p4 <-  ggplot() +
   geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Type)) +
@@ -231,15 +229,16 @@ p4 <-  ggplot() +
   geom_line(Plt_Dt_TL, mapping = aes(x= Years, 
                                      y=rollmean(DD, 10, na.pad=TRUE)), 
             color = "#000000", size = 1.33, linetype = "longdash") +
-  ggtitle(paste0("Mean Inferred Thermal Demand - ", RTO_Label)) +
-  ylab("Daily Aggregated Degree Hours") +
+  ylim(0, 27) +
+  ggtitle(paste0("Annual Mean Demand \n ", RTO_Label)) +
+  ylab("Inferred Demand (deg F)") +
   theme_bw() +
   theme(legend.text=element_text(size=24),
         legend.title=element_text(size=24),
         axis.text=element_text(size=18),
         axis.title=element_text(size=18),
-        plot.title = element_text(size=24)) +
-  scale_color_manual(values=group.colors)
+        plot.title = element_text(size=24))  +
+  scale_color_manual(values=c("#0000FF", "#ff0000", "#000000"))
 
 
 ###---------------Combine the plots------------------------------------------###
@@ -281,40 +280,40 @@ sel_rto <- 4
 RTO_Label <- nerc_labels[sel_rto]
   
 #Load Population and Temperature Grid Cell Data
-cdd_agg <- CDD_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block]/24)
-hdd_agg <- HDD_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block]/24)
-tl_agg <- TL_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block]/24)
+cdd_agg <- CDD_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block])
+hdd_agg <- HDD_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block])
+tl_agg <- TL_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block])
   
   
 #Plotting Dataset
 Plt_Dt_HDD <- data.frame(Years = 1951:2021,
                          DD = hdd_agg,
-                         Type = "Heating_Demand")
+                         Type = "Heating Demand")
   
 Plt_Dt_CDD <- data.frame(Years = 1950:2021,
                          DD = cdd_agg,
-                         Type = "Cooling_Demand")
+                         Type = "Cooling Demand")
 
 Plt_Dt_TL <- data.frame(Years = 1951:2021,
                         TL = tl_agg)
 
 #Combine the Datasets
 Plt_Dataset <- rbind(Plt_Dt_CDD, Plt_Dt_HDD)
-group.colors <- c(Heating_Demand ="#ff0000", Cooling_Demand = "#0000FF")
   
 p1 <-  ggplot() +
   geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Type), size = 1) +
   geom_point(Plt_Dt_TL, mapping = aes(x=Years, y = TL), size = 2) +
-  ggtitle(paste0("Peak Inferred Thermal Demand - ", RTO_Label)) +
-  ylab(paste0("Population Adjusted Daily Degree Days \n (Averaged over ",
+  ggtitle(paste0("Annual Peak Demand \n", RTO_Label)) +
+  ylab(paste0("Inferred Demand (deg F) \n (Averaged over ",
               block_sizes[sel_block], " hours)")) +
+  ylim(0, 30) +
   theme_bw() +
   theme(legend.text=element_text(size=24),
         legend.title=element_text(size=24),
         axis.text=element_text(size=20),
         axis.title=element_text(size=16),
         plot.title = element_text(size=23)) +
-  scale_color_manual(values=group.colors)
+  scale_color_manual(values=c("#0000FF", "#ff0000"))
 
 
 
@@ -323,40 +322,41 @@ sel_rto <- 6
 RTO_Label <- nerc_labels[sel_rto]
 
 #Load Population and Temperature Grid Cell Data
-cdd_agg <- CDD_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block]/24)
-hdd_agg <- HDD_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block]/24)
-tl_agg <- TL_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block]/24)
+cdd_agg <- CDD_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block])
+hdd_agg <- HDD_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block])
+tl_agg <- TL_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block])
 
 
 #Plotting Dataset
 Plt_Dt_HDD <- data.frame(Years = 1951:2021,
                          DD = hdd_agg,
-                         Type = "Heating_Demand")
+                         Type = "Heating Demand")
 
 Plt_Dt_CDD <- data.frame(Years = 1950:2021,
                          DD = cdd_agg,
-                         Type = "Cooling_Demand")
+                         Type = "Cooling Demand")
 
 Plt_Dt_TL <- data.frame(Years = 1951:2021,
                         TL = tl_agg)
 
 #Combine the Datasets
 Plt_Dataset <- rbind(Plt_Dt_CDD, Plt_Dt_HDD)
-group.colors <- c(Heating_Demand ="#ff0000", Cooling_Demand = "#0000FF")
+
 
 p2 <-  ggplot() +
   geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Type), size = 1) +
   geom_point(Plt_Dt_TL, mapping = aes(x=Years, y = TL), size = 2) +
-  ggtitle(paste0("Peak Inferred Thermal Demand - ", RTO_Label)) +
-  ylab(paste0("Population Adjusted Daily Degree Days \n (Averaged over ",
+  ggtitle(paste0("Annual Peak Demand \n", RTO_Label)) +
+  ylab(paste0("Inferred Demand (deg F) \n (Averaged over ",
               block_sizes[sel_block], " hours)")) +
+  ylim(0, 90) +
   theme_bw() +
   theme(legend.text=element_text(size=24),
         legend.title=element_text(size=24),
         axis.text=element_text(size=20),
         axis.title=element_text(size=16),
         plot.title = element_text(size=23)) +
-  scale_color_manual(values=group.colors)
+  scale_color_manual(values=c("#0000FF", "#ff0000"))
 
 
 ###---------------Combine the plots------------------------------------------###
@@ -407,7 +407,7 @@ Plt_Dt <- data.frame(Years = 1951:2021,
 p1 <-  ggplot(Plt_Dt) +
   geom_line(mapping = aes(x=Years, y = TL)) +
   geom_line(aes(x= Years, y=rollmean(TL, 10, na.pad=TRUE)), 
-            color = 'black', size = 1.33, linetype = "dashed") +
+            color = 'red', size = 1.33, linetype = "dashed") +
   ggtitle(paste0(" Thermal Load Factor - ", RTO_Label)) +
   ylab("Load Factor") +
   theme_bw() +
@@ -433,7 +433,7 @@ Plt_Dt <- data.frame(Years = 1951:2021,
 p2 <-  ggplot(Plt_Dt) +
   geom_line(mapping = aes(x=Years, y = TL)) +
   geom_line(aes(x= Years, y=rollmean(TL, 10, na.pad=TRUE)), 
-            color = 'black', size = 1.33, linetype = "dashed") +
+            color = 'red', size = 1.33, linetype = "dashed") +
   ggtitle(paste0(" Thermal Load Factor - ", RTO_Label)) +
   ylab("Load Factor") +
   theme_bw() +

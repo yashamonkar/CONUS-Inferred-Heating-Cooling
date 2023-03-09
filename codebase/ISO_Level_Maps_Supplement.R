@@ -109,7 +109,7 @@ for(i in 1:length(nerc_labels)) {
                                        y=rollmean(DD, 10, na.pad=TRUE)), 
               color = "#000000", size = 1.33, linetype = "longdash") +
     ggtitle(paste0(RTO_Label)) +
-    ylab("Daily Aggregated Degree Hours") +
+    ylab("Inferred Demand (deg F)") +
     theme_bw() +
     theme(legend.text=element_text(size=24),
           legend.title=element_text(size=24),
@@ -186,9 +186,9 @@ for(i in 1:length(nerc_labels)) {
   RTO_Label <- nerc_labels[sel_rto]
   
   #Load Population and Temperature Grid Cell Data
-  cdd_agg <- CDD_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block]/24)
-  hdd_agg <- HDD_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block]/24)
-  tl_agg <- TL_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block]/24)
+  cdd_agg <- CDD_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block])
+  hdd_agg <- HDD_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block])
+  tl_agg <- TL_Regional[[sel_rto]][[1]][[sel_block]]/(block_sizes[sel_block])
   
   if(i == 5){cdd_agg = cdd_agg[-65]}
     
@@ -213,7 +213,7 @@ for(i in 1:length(nerc_labels)) {
     geom_line(Plt_Dataset, mapping = aes(x=Years, y = DD, color = Type), size = 1) +
     geom_point(Plt_Dt_TL, mapping = aes(x=Years, y = TL), size = 2) +
     ggtitle(paste0( RTO_Label)) +
-    ylab(paste0("Population Adjusted Daily Degree Days \n (Averaged over ",
+    ylab(paste0("Inferred Demand (deg F) \n (Averaged over ",
                 block_sizes[sel_block], " hours)")) +
     theme_bw() +
     theme(legend.text=element_text(size=24),

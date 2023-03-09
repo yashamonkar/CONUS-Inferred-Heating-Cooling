@@ -79,10 +79,10 @@ p1 <- ggplot() +
   scale_x_continuous(name = " ", limits = c(-125, -65))+
   scale_y_continuous(name = " ", limits = c(24, 50)) +
   scale_fill_gradient2(midpoint=0, low="blue", mid="white",high="red", 
-                       limits = c(0, tx_max), name = "Load (°C) ") +
+                       limits = c(0, tx_max), name = "Inferred Demand (deg F) ") +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "brown", size = 0.15) +
-  ggtitle(" Mean Cooling Load") +
+  ggtitle(" Mean Cooling Demand") +
   theme_bw() +
   theme(legend.text=element_text(size=20),
         legend.title=element_text(size=20),
@@ -106,7 +106,7 @@ p2 <- ggplot() +
                        limits = c(0, tx_max), name = "HDD ") +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "brown", size = 0.15) +
-  ggtitle(" Mean Heating Load") +
+  ggtitle(" Mean Heating Demand") +
   theme_bw() +
   theme(legend.text=element_text(size=20),
         legend.title=element_text(size=20),
@@ -130,7 +130,7 @@ p3 <- ggplot() +
                        limits = c(0, tx_max), name = "TL") +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "brown", size = 0.15) +
-  ggtitle(" Mean Total Thermal Load") +
+  ggtitle(" Mean Total Thermal Demand") +
   theme_bw() +
   theme(legend.text=element_text(size=20),
         legend.title=element_text(size=20),

@@ -121,7 +121,7 @@ p1 <- ggplot() +
                        limits = c(-1, 1), name = "Scaled Slope (%/yr)  ") +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "brown", size = 0.15) +
-  ggtitle(" Cooling Demand - Mean") +
+  ggtitle(" Cooling Demand - Annual Mean") +
   theme_bw() +
   theme(legend.text=element_text(size=20),
         legend.title=element_text(size=24),
@@ -192,7 +192,7 @@ p2 <- ggplot() +
   #             fill = NA, color = 'black', size = 0.25) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "brown", size = 0.15) +
-  ggtitle(" Heating Demand - Mean") +
+  ggtitle(" Heating Demand - Annual Mean") +
   theme_bw() +
   theme(legend.text=element_text(size=20),
         legend.title=element_text(size=24),
@@ -265,7 +265,7 @@ p3 <- ggplot() +
   #             fill = NA, color = 'black', size = 0.25) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "brown", size = 0.15) +
-  ggtitle(" Total Thermal Demand - Mean") +
+  ggtitle(" Total Thermal Demand - Annual Mean") +
   theme_bw() +
   theme(legend.text=element_text(size=20),
         legend.title=element_text(size=24),
@@ -375,7 +375,7 @@ p1 <- ggplot() +
   #             fill = NA, color = 'black', size = 0.25) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "brown", size = 0.15) +
-  ggtitle(paste0(" Cooling Demand - Peak")) +
+  ggtitle(paste0(" Cooling Demand - Annual Peak")) +
   theme_bw() +
   theme(legend.text=element_text(size=20),
         legend.title=element_text(size=24),
@@ -445,7 +445,7 @@ p2 <- ggplot() +
   #             fill = NA, color = 'black', size = 0.25) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "brown", size = 0.15) +
-  ggtitle(paste0(" Heating Demand - Peak")) +
+  ggtitle(paste0(" Heating Demand - Annual Peak")) +
   theme_bw() +
   theme(legend.text=element_text(size=20),
         legend.title=element_text(size=24),
@@ -516,7 +516,7 @@ p3 <- ggplot() +
   #             fill = NA, color = 'black', size = 0.25) +
   geom_map(dat = us, map = us, aes(x=long, y=lat, map_id = region),
            fill = NA, color = "brown", size = 0.15) +
-  ggtitle(paste0(" Total Thermal Demand - Peak")) +
+  ggtitle(paste0(" Total Thermal Demand - Annual Peak")) +
   theme_bw() +
   theme(legend.text=element_text(size=20),
         legend.title=element_text(size=24),

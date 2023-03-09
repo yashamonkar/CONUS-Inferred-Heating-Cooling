@@ -70,7 +70,7 @@ n_regions <- length(nerc_sf$Labels)
 all_grids <- nerc_pop_temp$Temperature
 population <- nerc_pop_temp$Population
 
-thresh_temp <- 291.5 #-----65 Fahrenheit 
+thresh_temp <- 65 #291.5 #-----65 Fahrenheit 
 yrs <- 1951:2021
 block_sizes <- c(6,12,24,72, 168, 336) #hours
 
@@ -182,6 +182,9 @@ get_tl_maxima <- function(Population, Temp_grids,
     
     #--------------------------------------------------------------------------#
     ###Compute the Ann-Max HDD for the year
+    #Convert to Fahrenheit
+    t2m_land <-  1.8*(t2m_land - 273.15) + 32
+    
     #HDD
     HDD <-  thresh_temp - t2m_land
     HDD[HDD<0] <- 0
@@ -225,7 +228,7 @@ get_tl_maxima <- function(Population, Temp_grids,
     geom_vline(xintercept = mean(tl1), color = '#af8dc3', linetype = "dashed") +
     geom_vline(xintercept = mean(tl2), color = '#7fbf7b', linetype = "dashed") +
     ylab("Density") +
-    xlab("Thermal Load (oC)") +
+    xlab("Thermal Load (deg F)") +
     scale_color_manual(values=group.colors) +
     theme_bw() +
     theme(axis.text=element_text(size=5),
@@ -255,7 +258,7 @@ get_tl_maxima <- function(Population, Temp_grids,
     geom_hline(yintercept = mean(tl2), color = '#7fbf7b', 
                linetype = "dashed", size = 1.25) +
     scale_color_manual(values=group.colors) +
-    ylab("Total Thermal Load (oC)") +
+    ylab("Total Thermal Load (deg F)") +
     xlab("Capacity Utilization [Percent of Time (%)]") +
     theme_bw() +
     theme(axis.text=element_text(size=10),
