@@ -76,8 +76,8 @@ sub_region <- nerc_sf$Shapefiles[[sel_rto]]
 lat_lon <- sub_region %>% fortify() %>% select(long,lat)
 lat_min <- min(lat_lon$lat)-0.5
 lat_max <- max(lat_lon$lat)+0.5
-lon_min <- min(lat_lon$long)-0.5
-lon_max <- max(lat_lon$long)+0.5
+lon_min <- min(lat_lon$long)-2
+lon_max <- max(lat_lon$long)+1.75
 
 p1 <-  ggplot() +
   geom_map(dat = world, map = world, aes(x=long, y=lat, map_id = region),

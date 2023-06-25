@@ -98,6 +98,10 @@ for(i in 1:nrow(grid_locs)){
 min_leg <- min(unlist(slope_cdd), unlist(slope_hdd), unlist(slope_tldd))
 max_leg <- max(unlist(slope_cdd), unlist(slope_hdd), unlist(slope_tldd))
 
+#Set to a symmetric scale
+legend_limit <- max(abs(min_leg), abs(max_leg))
+min_leg <- -legend_limit*1.5
+max_leg <- legend_limit*1.5
 
 ###--------------------------------CDD---------------------------------------###
 slope <- list()
@@ -344,7 +348,10 @@ for(i in 1:nrow(grid_locs)){
 min_leg <- min(unlist(slope_cdd), unlist(slope_hdd), unlist(slope_tldd))
 max_leg <- max(unlist(slope_cdd), unlist(slope_hdd), unlist(slope_tldd))
 
-
+#Set to a symmetric scale
+legend_limit <- max(abs(min_leg), abs(max_leg))
+min_leg <- -legend_limit*1.5
+max_leg <- legend_limit*1.5
 
 ###--------------------------------CDD---------------------------------------###
 slope <- list()
@@ -589,6 +596,11 @@ for(i in 1:nrow(grid_locs)){
 min_leg <- min(unlist(slope_cdd), unlist(slope_hdd), unlist(slope_tldd))
 max_leg <- max(unlist(slope_cdd), unlist(slope_hdd), unlist(slope_tldd))
 
+
+#Set to a symmetric scale
+legend_limit <- max(abs(min_leg), abs(max_leg))
+min_leg <- -legend_limit*1.5
+max_leg <- legend_limit*1.5
 
 ###--------------------------------CDD---------------------------------------###
 slope <- list()
