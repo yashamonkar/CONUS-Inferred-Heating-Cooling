@@ -285,7 +285,7 @@ p_total <- plot_grid(p1 + theme(legend.position="none"),
                      p2 + theme(legend.position="none"),
                      p3 + theme(legend.position="none"),
                      nrow =2,
-                     labels = c('A', 'B', 'C'), 
+                     labels = c('a', 'b', 'c'), 
                      label_size = 20)
 
 legend_b <- get_legend(
@@ -534,7 +534,7 @@ p_total <- plot_grid(p1 + theme(legend.position="none"),
                      p2 + theme(legend.position="none"),
                      p3 + theme(legend.position="none"),
                      nrow =2,
-                     labels = c('A', 'B', 'C'), 
+                     labels = c('a', 'b', 'c'), 
                      label_size = 20)
 
 legend_b <- get_legend(
@@ -786,7 +786,7 @@ p_total <- plot_grid(p1 + theme(legend.position="none"),
                      p2 + theme(legend.position="none"),
                      p3 + theme(legend.position="none"),
                      nrow =2,
-                     labels = c('A', 'B', 'C'), 
+                     labels = c('a', 'b', 'c'), 
                      label_size = 20)
 
 legend_b <- get_legend(

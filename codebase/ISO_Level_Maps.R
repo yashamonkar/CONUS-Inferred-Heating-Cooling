@@ -248,8 +248,8 @@ p_total <- plot_grid(p1,p3,
                      p2 + theme(legend.position="none"),
                      p4 + theme(legend.position="none"),
                      nrow =2,
-                     labels = c('A', 'B', 'C', 'D'), 
-                     label_size = 14)
+                     labels = c('a', 'b', 'c', 'd'), 
+                     label_size = 18)
 
 #Seperate the legend
 legend_b <- get_legend(p2 + guides(color = guide_legend(nrow = 1, 
@@ -365,7 +365,7 @@ p2 <-  ggplot() +
 p_total <- plot_grid(p1 + theme(legend.position="none"),
                      p2 + theme(legend.position="none"),
                      nrow =1,
-                     labels = c('A', 'B'), 
+                     labels = c('a', 'b'), 
                      label_size = 20)
 
 
@@ -445,7 +445,7 @@ p2 <-  ggplot(Plt_Dt) +
   
 ###---------------Combine the plots------------------------------------------###
 p_total <- plot_grid(p1,p2, nrow =1,
-                     labels = c('A', 'B'), 
+                     labels = c('a', 'b'), 
                      label_size = 20)
 
 pdf("figures/ISO_Plots_3.pdf", height=1850/300, width=5000/300)
